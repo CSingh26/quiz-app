@@ -2,4 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-
+@font-face {
+    font-family: 'Gowun Dodum'; 
+    src: url('/fonts/GowunDodum-Regular.tff') format('ttf'); 
+    font-weight: normal; 
+    font-style: normal;  
+}
+  
+.custom-font {
+    font-family: 'Gowun Dodum', sans-serif; 
+}
+ 
