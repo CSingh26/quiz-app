@@ -9,13 +9,13 @@ require('dotenv').config({
 const login = async (req, res) => {
     const { username, password } = req.body
     
-    if (username !== INS_USERNAME) {
+    if (username !== process.env.ADMIN_USERNAME) {
         return res.status(401).json({
             messsage: "Invalid Username"
         })
     }
 
-    const isMatch = await enc.compare(password, INS_PWD)
+    const isMatch = await enc.compare(password, process.env.ADMIN_PWD)
     if (!isMatch) {
         return res.status(401).json({
             messsage: "Incorrect Password!"
@@ -23,14 +23,19 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({
-        username: INS_USERNAME
+        username: process.env.ADMIN_USERNAME
     }, JWT_SEC, {
         expiresIn: '1h'
     })
 
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 3600000,
+    })
+
     res.status(200).json({
         message: "Login Successfull",
-        token: token
     })
 }
 

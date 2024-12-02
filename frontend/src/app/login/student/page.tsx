@@ -17,7 +17,8 @@ export default function StudentLogin() {
                 body: JSON.stringify({
                     username,
                     password
-                })
+                }),
+                credentials: "include"
             })
 
             const data = await response.json()
