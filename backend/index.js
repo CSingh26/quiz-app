@@ -4,7 +4,8 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const cookie = require('cookie-parser')
 
-const insRoutes = require('./routes/authRoutesIns')
+const insRoutes = require('./routes/instructor/authRoutesInstructor')
+const stuRoutes = require('./routes/student/authRoutesStudent')
 
 require('dotenv').config({
     path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
@@ -20,6 +21,7 @@ app.use(bodyParser.json())
 app.use(cookie())
 
 app.use('/api/auth/ins', insRoutes)
+app.use('/api/auth/student', stuRoutes)
 
 const PORT = process.env.PORT || 3876
 
