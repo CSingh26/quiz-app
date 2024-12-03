@@ -23,7 +23,8 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({
-        username: process.env.ADMIN_USERNAME
+        username: process.env.ADMIN_USERNAME,
+        role: "instructor"
     }, process.env.JWT_KEY, {
         expiresIn: '1h'
     })

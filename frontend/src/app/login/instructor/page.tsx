@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function InstructorLogin() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const router = useRouter()
 
     const handleLogin = async () => {
         try {
@@ -23,6 +25,7 @@ export default function InstructorLogin() {
             const data = await response.json()
             if (response.ok) {
                 alert('Instructor login successful')
+                router.push("/dashboard/instructor")
             } else {
                 alert(data.message || 'Login Failed')
             }

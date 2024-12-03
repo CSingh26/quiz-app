@@ -61,7 +61,7 @@ const login = async (req, res) => {
             })
         }
 
-        const isMatch = enc.compare(password, student.password)
+        const isMatch = await enc.compare(password, student.password)
         if (!isMatch) {
             return res.status(401).json({
                 message: "Invalid Username or Password"
@@ -69,7 +69,8 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign({
-            id: student.id
+            id: student.id,
+            role: "student"
         }, JWT_SEC, {
             expiresIn: '1h'
         })

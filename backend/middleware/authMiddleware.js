@@ -6,9 +6,12 @@ require('dotenv').config({
 
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.token
-  if (!token) return res.status(403).json({ 
-    message: "No token provided" 
-})
+  if (!token) {
+    console.log("No token found in cookies")
+    return res.status(403).json({
+      message: "Unauthorized"
+    })
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_KEY)
