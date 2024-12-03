@@ -24,7 +24,7 @@ const login = async (req, res) => {
 
     const token = jwt.sign({
         username: process.env.ADMIN_USERNAME
-    }, JWT_SEC, {
+    }, process.env.JWT_KEY, {
         expiresIn: '1h'
     })
 

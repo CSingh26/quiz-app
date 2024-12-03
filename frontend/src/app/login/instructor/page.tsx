@@ -16,7 +16,8 @@ export default function InstructorLogin() {
                 body: JSON.stringify({
                     username,
                     password
-                })
+                }),
+                credentials: "include"
             })
 
             const data = await response.json()
