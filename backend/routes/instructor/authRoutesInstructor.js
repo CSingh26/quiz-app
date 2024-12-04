@@ -11,10 +11,10 @@ require('dotenv').config({
 router.post('/login', authController)
 
 router.post("/logout", (req, res) => {
-    res.clearCookie("token", "", {
+    res.clearCookie("token", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        path: "/"
+        secure: true,
+        path: "/",
     })
     res.status(200).json({
         message: "Logout out successfully"

@@ -8,7 +8,6 @@ export default function InstructorDashboard() {
 
     const handleLogout = () => {
         // Clear the token from cookies
-        document.cookie = "token=; Max-Age=0; path=/;";
         router.push("/login/instructor") // Redirect to instructor login
     }
 
