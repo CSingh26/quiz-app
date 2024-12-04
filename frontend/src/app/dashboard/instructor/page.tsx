@@ -6,9 +6,21 @@ import { useRouter } from "next/navigation"
 export default function InstructorDashboard() {
     const router = useRouter()
 
-    const handleLogout = () => {
-        // Clear the token from cookies
-        router.push("/login/instructor") // Redirect to instructor login
+    const handleLogout = async () => {
+        try {
+            const resposnse = await fetch("http://localhost:6573/api/auth/ins/logout", {
+                method: "POST",
+                credentials: "include"
+            })
+    
+            if (resposnse.ok) {
+                router.push("/login/instructor") // Redirect to instructor login
+            } else {
+                console.error("Failed to log out")
+            }
+        } catch (err) {
+            console.log("Error during logout:", err)
+        }
     }
 
     useEffect(() => {

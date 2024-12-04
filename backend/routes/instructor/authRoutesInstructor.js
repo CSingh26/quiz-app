@@ -13,7 +13,7 @@ router.post('/login', authController)
 router.post("/logout", (req, res) => {
     res.clearCookie("token", {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         path: "/",
     })
     res.status(200).json({
