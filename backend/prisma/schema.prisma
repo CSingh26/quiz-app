@@ -15,23 +15,43 @@ model Student {
 }
 
 model TestModule {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  name String @unique
-  questions Question[]
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  name       String       @unique
+  questions  Question[]
+  ActiveRoom ActiveRoom[]
+  PastRoom   PastRoom[]
 }
 
 model Question {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  text String
-  options Option[]
-  correct String
-  testModule TestModule @relation(fields: [testModuleId], references: [id])
-  testModuleId String @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  text         String
+  options      Option[]
+  correct      String
+  testModule   TestModule @relation(fields: [testModuleId], references: [id])
+  testModuleId String     @db.ObjectId
 }
 
 model Option {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  text String
-  question Question @relation(fields: [questionId], references: [id])
-  questionId String @db.ObjectId
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  text       String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String   @db.ObjectId
+}
+
+model ActiveRoom {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  roomName     String
+  testModule   TestModule @relation(fields: [testModuleId], references: [id])
+  testModuleId String     @db.ObjectId
+  startTime    DateTime
+  endTime      DateTime
+}
+
+model PastRoom {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  roomName     String
+  testModule   TestModule @relation(fields: [testModuleId], references: [id])
+  testModuleId String     @db.ObjectId
+  startTime    DateTime
+  endTime      DateTime
 }

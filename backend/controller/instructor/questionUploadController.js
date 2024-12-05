@@ -80,4 +80,30 @@ const uploadQuestions = async (req, res) => {
     }
 }
 
-module.exports = { uploadQuestions }
+const getTestModules = async (req, res) => {
+    try {
+        const testModules = await prisma.testModule.findMany({
+            select: {
+                name: true,
+                id: true
+            }
+        })
+
+        if (testModules.length === 0) {
+            return res.status(404).json({
+                message: "No test modules found"
+            })
+        }
+
+        res.status(200).json({
+            modules: testModules
+        })
+    } catch (err) {
+        console.error("Error fetching test modules:", err)
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
+module.exports = { uploadQuestions, getTestModules }

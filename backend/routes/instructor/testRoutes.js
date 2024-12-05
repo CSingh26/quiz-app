@@ -27,6 +27,9 @@ router.post("/upload-test",
             })
         }
     },
-    testController.uploadQuestions)
+    testController.uploadQuestions
+)
+
+router.get("/get-modules", testController.getTestModules)
 
 module.exports = router

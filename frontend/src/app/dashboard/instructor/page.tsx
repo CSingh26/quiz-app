@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
+interface TestModule {
+  id: string
+  name: string
+}
+
 export default function InstructorDashboard() {
   const router = useRouter()
 
@@ -15,7 +20,7 @@ export default function InstructorDashboard() {
   const [endTime, setEndTime] = useState("")
   const [roomCode, setRoomCode] = useState("")
   const [testModuleName, setTestModuleName] = useState("")
-  const [availableModules, setAvailableModules] = useState<string[]>([])
+  const [availableModules, setAvailableModules] = useState<TestModule[]>([])
 
   const handleLogout = async () => {
     try {
@@ -112,7 +117,7 @@ export default function InstructorDashboard() {
     }
 
     try {
-      const response = await fetch("http://localhost:6573/api/tests/create-room", {
+      const response = await fetch("http://localhost:6573/api/room/create-room", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -222,8 +227,8 @@ export default function InstructorDashboard() {
           >
             <option value="">Select Test Module</option>
             {availableModules.map((module) => (
-              <option key={module} value={module}>
-                {module}
+              <option key={module.id} value={module.name}>
+                {module.name}
               </option>
             ))}
           </select>
