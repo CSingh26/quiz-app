@@ -6,6 +6,7 @@ const cookie = require('cookie-parser')
 
 const insRoutes = require('./routes/instructor/authRoutesInstructor')
 const stuRoutes = require('./routes/student/authRoutesStudent')
+const testRoutes = require('./routes/instructor/testRoutes')
 
 require('dotenv').config({
     path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
@@ -22,6 +23,7 @@ app.use(cookie())
 
 app.use('/api/auth/ins', insRoutes)
 app.use('/api/auth/student', stuRoutes)
+app.use("/api/tests", testRoutes)
 
 const PORT = process.env.PORT || 3876
 

@@ -13,3 +13,25 @@ model Student {
   name     String
   password String
 }
+
+model TestModule {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+  questions Question[]
+}
+
+model Question {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  text String
+  options Option[]
+  correct String
+  testModule TestModule @relation(fields: [testModuleId], references: [id])
+  testModuleId String @db.ObjectId
+}
+
+model Option {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  text String
+  question Question @relation(fields: [questionId], references: [id])
+  questionId String @db.ObjectId
+}
