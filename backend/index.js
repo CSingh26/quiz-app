@@ -9,6 +9,8 @@ const stuRoutes = require('./routes/student/authRoutesStudent')
 const testRoutes = require('./routes/instructor/testRoutes')
 const roomRoutes = require('./routes/instructor/roomRoutes')
 
+const roomTransfer = require("./routes/instructor/roomTransfer")
+
 require('dotenv').config({
     path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
 }) //configure your env and enter approraite path
@@ -21,6 +23,8 @@ app.use(cors({
 }))
 app.use(bodyParser.json())
 app.use(cookie())
+
+roomTransfer()
 
 app.use('/api/auth/ins', insRoutes)
 app.use('/api/auth/student', stuRoutes)
