@@ -21,16 +21,17 @@ const createRoom = async (req, res) => {
             })
         }
 
+        const roomCode = Math.random.toString(36).substring(2, 8).toUpperCase()
+
         const newRoom = await prisma.activeRoom.create({
             data: {
                 roomName,
+                roomCode,
                 testModuleId: testModule.id,
                 startTime: new Date(`${expiryDate}T${startTime}`),
                 endTime: new Date(`${expiryDate}T${endTime}`)
             }
         })
-
-        const roomCode = Math.random.toString(36).substring(2, 8).toUpperCase()
 
         res.status(201).json({
             message: "Room created successfully",
@@ -58,6 +59,7 @@ const transferExpiredRooms = async () => {
             await prisma.pastRoom.create({
                 data: {
                     roomName: room.roomName,
+                    roomCode: room.roomCode,
                     testModuleId: room.testModuleId,
                     startTime: room.startTime,
                     endTime: room.endTime

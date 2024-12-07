@@ -41,6 +41,7 @@ model Option {
 model ActiveRoom {
   id           String     @id @default(auto()) @map("_id") @db.ObjectId
   roomName     String
+  roomCode String @unique
   testModule   TestModule @relation(fields: [testModuleId], references: [id])
   testModuleId String     @db.ObjectId
   startTime    DateTime
@@ -50,6 +51,7 @@ model ActiveRoom {
 model PastRoom {
   id           String     @id @default(auto()) @map("_id") @db.ObjectId
   roomName     String
+  roomCode String @unique
   testModule   TestModule @relation(fields: [testModuleId], references: [id])
   testModuleId String     @db.ObjectId
   startTime    DateTime
