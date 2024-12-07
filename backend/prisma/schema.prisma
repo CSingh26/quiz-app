@@ -20,6 +20,7 @@ model TestModule {
   questions  Question[]
   ActiveRoom ActiveRoom[]
   PastRoom   PastRoom[]
+  ScheduledRoom ScheduledRoom[]
 }
 
 model Question {
@@ -57,3 +58,14 @@ model PastRoom {
   startTime    DateTime
   endTime      DateTime
 }
+
+model ScheduledRoom {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  roomName     String
+  roomCode     String      @unique
+  testModuleID String      @db.ObjectId
+  testModule   TestModule  @relation(fields: [testModuleID], references: [id])
+  startTime    DateTime
+  endTime      DateTime
+  createdAt    DateTime    @default(now())
+  }
