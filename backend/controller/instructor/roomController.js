@@ -4,9 +4,9 @@ const prisma = new PrismaClient()
 
 const createRoom = async (req, res) => {
     try {
-        const { roomName, testModuleName, startTime, endTime, expiryDate } = req.body
+        const { roomName, roomCode, testModuleName, startTime, endTime, expiryDate } = req.body
 
-        if (!roomName || !testModuleName || !startTime || !endTime || !expiryDate) {
+        if (!roomName || !roomCode || !testModuleName || !startTime || !endTime || !expiryDate) {
             return res.status(400).json({
                 message: "All fields are required"
             })
@@ -20,8 +20,6 @@ const createRoom = async (req, res) => {
                 message: "Test module not found"
             })
         }
-
-        const roomCode = Math.random.toString(36).substring(2, 8).toUpperCase()
 
         const parsedStartTime = new Date(`${expiryDate}T${startTime}`)
         const parsedEndTime = new Date(`${expiryDate}T${endTime}`)
@@ -128,4 +126,28 @@ const activateScheuledRooms = async () => {
     }
 }
 
-module.exports = { createRoom, transferExpiredRooms, activateScheuledRooms}
+const getActiveRooms = async (req, res) => {
+    try {
+        const activeRooms = await prisma.activeRoom.findMany({
+            include: {
+                testModule: true
+            }
+        })
+
+        res.status(200).json({
+            activeRooms
+        })
+    } catch (err) {
+        console.error("Error fetching active rooms:", err)
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
+module.exports = { 
+    createRoom, 
+    transferExpiredRooms, 
+    activateScheuledRooms,
+    getActiveRooms
+}

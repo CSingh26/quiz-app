@@ -12,6 +12,8 @@ model Student {
   username String @unique
   name     String
   password String
+  quizAttempt QuizAttempt[]
+  leaderboard Leaderbaord[]
 }
 
 model TestModule {
@@ -47,6 +49,7 @@ model ActiveRoom {
   testModuleId String     @db.ObjectId
   startTime    DateTime
   endTime      DateTime
+  leaderboard Leaderbaord[]
 }
 
 model PastRoom {
@@ -68,4 +71,23 @@ model ScheduledRoom {
   startTime    DateTime
   endTime      DateTime
   createdAt    DateTime    @default(now())
-  }
+}
+
+model QuizAttempt {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  student    Student    @relation(fields: [studentId], references: [id])
+  studentId  String     @db.ObjectId
+  answers    Json
+  score      Int
+  finishedAt DateTime?
+}
+
+model Leaderbaord {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  room       ActiveRoom  @relation(fields: [roomId], references: [id])
+  roomId     String      @db.ObjectId
+  student    Student     @relation(fields: [studentId], references: [id])
+  studentId  String      @db.ObjectId
+  score      Int
+  rank       Int
+}
