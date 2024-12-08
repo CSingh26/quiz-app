@@ -11,6 +11,21 @@ const createRoom = async (req, res) => {
                 message: "All fields are required"
             })
         }
+
+        const existingActiveRoom = await prisma.activeRoom.findUnique({
+            where: { roomCode },
+        })
+
+        const existingScheduledRoom = await prisma.scheduledRoom.findUnique({
+            where: { roomCode },
+        })
+
+        if (existingActiveRoom || existingScheduledRoom) {
+            return res.status(400).json({
+                message: "Room code already exists. Please choose a different code.",
+            })
+        }
+
         const testModule = await prisma.testModule.findUnique({
             where: { name: testModuleName }
         })

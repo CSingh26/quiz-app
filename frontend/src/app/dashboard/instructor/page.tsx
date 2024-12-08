@@ -111,7 +111,7 @@ export default function InstructorDashboard() {
   }
 
   const handleCreateRoom = async () => {
-    if (!roomName || !expiryDate || !startTime || !endTime || !testModuleName) {
+    if (!roomName || !roomCode || !expiryDate || !startTime || !endTime || !testModuleName) {
       alert("Please fill in all the details")
       return
     }
@@ -124,6 +124,7 @@ export default function InstructorDashboard() {
         },
         body: JSON.stringify({
           roomName,
+          roomCode,
           testModuleName,
           startTime,
           endTime,
@@ -137,6 +138,7 @@ export default function InstructorDashboard() {
         setRoomCode(data.roomCode)
         alert("Room Created Successfully")
         setRoomName("")
+        setRoomCode("")
         setExpiryDate("")
         setStartTime("")
         setEndTime("")
@@ -200,6 +202,13 @@ export default function InstructorDashboard() {
             placeholder="Room Name"
             value={roomName}
             onChange={(e) => setRoomName(e.target.value)}
+            className="mb-4 w-full px-4 py-2 border rounded"
+          />
+          <input
+            type="text"
+            placeholder="Enter Room Code"
+            value={roomCode}
+            onChange={(e) => setRoomCode(e.target.value)}
             className="mb-4 w-full px-4 py-2 border rounded"
           />
           <input
