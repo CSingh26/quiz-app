@@ -31,7 +31,7 @@ app.use('/api/auth/ins', insRoutes)
 app.use('/api/auth/student', stuRoutes)
 app.use("/api/tests", testRoutes)
 app.use("/api/room", roomRoutes)
-app.use("api/quiz", quizRoutes)
+app.use("/api/quiz", quizRoutes)
 
 const PORT = process.env.PORT || 3876
 

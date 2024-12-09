@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 export default function StudentLogin() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const router = useRouter()
 
     const handleLogin = async () => {
         try {
@@ -24,6 +26,7 @@ export default function StudentLogin() {
             const data = await response.json()
             if (response.ok) {
                 alert('Student Login Successfull')
+                router.push("/dashboard/student")
             } else {
                 alert(data.message || 'Login Failed')
             }

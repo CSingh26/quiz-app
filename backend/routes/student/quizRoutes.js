@@ -3,9 +3,9 @@ const quizController = require("../../controller/student/quizController")
 
 const router = express.Router()
 
-router.get("/:roomCode/questions", quizController.getQuizQuestions)
+router.get("/:roomCode/get-questions", quizController.getQuizQuestions)
 
-router.post("/submit-quiz", quizController.getQuizQuestions)
+router.post("/submit-quiz", quizController.submitQuiz)
 
 router.get("/:roomCode/leaderboard", quizController.getLeaderboard)
 
