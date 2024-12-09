@@ -53,74 +53,77 @@ const getQuizQuestions = async (req, res) => {
 
 const submitQuiz = async (req, res) => {
     try {
-        const { roomCode, studentID, answers } = req.body
+        const { roomCode, answers } = req.body;
 
         const room = await prisma.activeRoom.findUnique({
-            where: { roomCode }
-        })
+            where: { roomCode },
+        });
         if (!room) {
-            res.status(404).json({
-                message: "Room not found or invactive"
-            })
+            return res.status(404).json({
+                message: "Room not found or inactive",
+            });
         }
 
+        const studentID = req.user.id; // Extracted from the middleware
         const student = await prisma.student.findUnique({
-            where: { id: studentID }
-        })
+            where: { id: studentID },
+        });
         if (!student) {
             return res.status(404).json({
-                message: "Student not found"
-            })
+                message: "Student not found",
+            });
         }
 
-        let score = 0
-        for (const answer of answers) {
+        let score = 0;
+        // Iterate over the `answers` object
+        for (const [questionId, selectedOption] of Object.entries(answers)) {
             const question = await prisma.question.findUnique({
-                where: { id: answer.questionId},
-                include: { options: true }
-            })
+                where: { id: questionId },
+                include: { options: true },
+            });
 
-            if (question.correct === answer.selectedOption) {
-                score += 1
+            if (question && question.correct === selectedOption) {
+                score += 1; // Increment score for a correct answer
             }
         }
 
-        const quizAttempt = await prisma.quizAttempt.create({
+        await prisma.quizAttempt.create({
             data: {
-                studentID,
-                answers,
+                studentId: studentID,
+                answers, // Save the entire object as JSON
                 score,
-                finishedAt: new Date()
-            }
-        })
+                finishedAt: new Date(),
+            },
+        });
 
-        const leaderboardEntry = await prisma.leaderbaord.upsert({
+        // Fix for the leaderboard upsert
+        await prisma.leaderbaord.upsert({
             where: {
-                studentId_roomId: {
-                    studentID, 
-                    roomId: room.id
-                }
+              studentId_roomId: {
+                studentId: studentID,
+                roomId: room.id,
+              },
             },
             update: { score },
             create: {
-                studentID,
-                roomId: room.id,
-                score,
-                rank: 0
-            }
-        })
+              studentId: studentID,
+              roomId: room.id,
+              score,
+              rank: 0, 
+            },
+          })
 
         res.status(200).json({
             message: "Quiz submitted successfully",
-            score
-        })
+            score,
+        });
     } catch (err) {
-        console.error("Error submitting quiz:", err)
+        console.error("Error submitting quiz:", err);
         res.status(500).json({
-            message: "Internal Server Error"
-        })
+            message: "Internal Server Error",
+        });
     }
-}
+};
 
 const getLeaderboard = async (req, res) => {
     try {

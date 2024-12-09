@@ -90,4 +90,6 @@ model Leaderbaord {
   studentId  String      @db.ObjectId
   score      Int
   rank       Int
+
+  @@unique([studentId, roomId])
 }

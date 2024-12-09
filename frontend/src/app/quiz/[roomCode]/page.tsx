@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 interface Question {
     id: string
     text: string
-    options: string[]
+    options: { label: string; text: string; id: string }[]
 }
 
 export default function Quiz({ params }: { params: { roomCode: string } }) {
@@ -20,11 +20,14 @@ export default function Quiz({ params }: { params: { roomCode: string } }) {
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
+                console.log("Fetching questions for room code:", params.roomCode)
+
                 const response = await fetch(
-                    `http://localhost:6573/api/quiz/${params.roomCode}/get-questions`
+                    `http://localhost:6573/api/quiz/${encodeURIComponent(params.roomCode)}/get-questions`
                 )
 
                 const data = await response.json()
+                console.log("Fetched Questions:", data)
 
                 if (response.ok) {
                     setQuestions(
@@ -34,6 +37,7 @@ export default function Quiz({ params }: { params: { roomCode: string } }) {
                         }))
                     )
                 } else {
+                    console.error("Error fetching questions:", data.message || "Unknown error")
                     alert("Failed to fetch questions")
                     router.push("/dashboard/student")
                 }
@@ -59,6 +63,7 @@ export default function Quiz({ params }: { params: { roomCode: string } }) {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     roomCode: params.roomCode,
                     answers,
@@ -96,19 +101,21 @@ export default function Quiz({ params }: { params: { roomCode: string } }) {
                         Question {currentQuestionIndex + 1} of {questions.length}
                     </p>
                     <p className="mb-4">{currentQuestion.text}</p>
-                    {currentQuestion.options.map((option, index) => (
-                        <button
-                            key={index}
-                            className={`w-full mb-2 px-4 py-2 rounded ${
-                                answers[currentQuestion.id] === option
-                                    ? "bg-green-500 text-white"
-                                    : "bg-gray-200"
-                            }`}
-                            onClick={() => handleOptionSelect(currentQuestion.id, option)}
-                        >
-                            {String.fromCharCode(97 + index)}. {option}
-                        </button>
-                    ))}
+                    <div className="mb-4">
+                        {currentQuestion.options.map((option, index) => (
+                            <button
+                                key={index}
+                                className={`w-full mb-2 px-4 py-2 rounded ${
+                                    answers[currentQuestion.id] === option.text
+                                        ? "bg-green-500 text-white"
+                                        : "bg-gray-200"
+                                }`}
+                                onClick={() => handleOptionSelect(currentQuestion.id, option.text)}
+                            >
+                                {String.fromCharCode(97 + index)}. {option.text}
+                            </button>
+                        ))}
+                    </div>
                     <div className="mt-4 flex justify-between">
                         <button
                             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
