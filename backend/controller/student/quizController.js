@@ -146,19 +146,19 @@ const getLeaderboard = async (req, res) => {
             })
         }
 
-        const leaderbaord = room.leaderboard
+        const leaderboard = room.leaderboard
             .sort((a, b) => b.score - a.score)
-            .map((entry, index) => ({
-                rank: index + 1,
-                studentName: entry.student.name,
-                score: entry.score
-            }))
-
-            res.status(200).json({
-                leaderbaord
+            .map((entry, index) => {
+                return {
+                    rank: index + 1,
+                    studentName: entry.student.name,
+                    score: entry.score
+                }
             })
+
+        res.status(200).json({ leaderboard })
     } catch (err) {
-        console.error("Error fetching leaderbaord:", err)
+        console.error("Error fetching leaderboard:", err)
         res.status(500).json({
             message: "Internal Server Error"
         })

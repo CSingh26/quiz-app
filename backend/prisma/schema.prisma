@@ -66,8 +66,8 @@ model ScheduledRoom {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   roomName     String
   roomCode     String      @unique
-  testModuleID String      @db.ObjectId
-  testModule   TestModule  @relation(fields: [testModuleID], references: [id])
+  testModuleId String      @db.ObjectId
+  testModule   TestModule  @relation(fields: [testModuleId], references: [id])
   startTime    DateTime
   endTime      DateTime
   createdAt    DateTime    @default(now())
@@ -84,8 +84,8 @@ model QuizAttempt {
 
 model Leaderbaord {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  room       ActiveRoom  @relation(fields: [roomId], references: [id])
-  roomId     String      @db.ObjectId
+  room       ActiveRoom?  @relation(fields: [roomId], references: [id])
+  roomId     String?      @db.ObjectId
   student    Student     @relation(fields: [studentId], references: [id])
   studentId  String      @db.ObjectId
   score      Int

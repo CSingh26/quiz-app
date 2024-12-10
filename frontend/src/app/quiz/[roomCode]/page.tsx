@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 
 interface Question {
     id: string
@@ -9,21 +9,23 @@ interface Question {
     options: { label: string; text: string; id: string }[]
 }
 
-export default function Quiz({ params }: { params: { roomCode: string } }) {
+export default function Quiz() {
     const router = useRouter()
+
     const [questions, setQuestions] = useState<Question[]>([])
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
     const [answers, setAnswers] = useState<Record<string, string>>({})
     const [submitted, setSubmitted] = useState(false)
     const [loading, setLoading] = useState(true)
+    const { roomCode } = useParams() as { roomCode: string }
 
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                console.log("Fetching questions for room code:", params.roomCode)
+                console.log("Fetching questions for room code:", roomCode)
 
                 const response = await fetch(
-                    `http://localhost:6573/api/quiz/${encodeURIComponent(params.roomCode)}/get-questions`
+                    `http://localhost:6573/api/quiz/${encodeURIComponent(roomCode)}/get-questions`
                 )
 
                 const data = await response.json()
@@ -50,7 +52,7 @@ export default function Quiz({ params }: { params: { roomCode: string } }) {
         }
 
         fetchQuestions()
-    }, [params.roomCode, router])
+    }, [roomCode, router])
 
     const handleOptionSelect = (questionId: string, option: string) => {
         setAnswers((prev) => ({ ...prev, [questionId]: option }))
@@ -65,7 +67,7 @@ export default function Quiz({ params }: { params: { roomCode: string } }) {
                 },
                 credentials: "include",
                 body: JSON.stringify({
-                    roomCode: params.roomCode,
+                    roomCode: roomCode,
                     answers,
                 }),
             })
@@ -73,7 +75,7 @@ export default function Quiz({ params }: { params: { roomCode: string } }) {
             if (response.ok) {
                 alert("Quiz submitted successfully")
                 setSubmitted(true)
-                router.push(`/leaderboard/${params.roomCode}`)
+                router.push(`/leaderboard/${roomCode}`)
             } else {
                 alert("Failed to submit quiz")
             }

@@ -10,8 +10,7 @@ interface LeaderboardEntry {
 }
 
 export default function Leaderboard() {
-    const params = useParams() as { roomCode: string }
-    const { roomCode } = params
+    const { roomCode } = useParams() as { roomCode: string }
 
 
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])

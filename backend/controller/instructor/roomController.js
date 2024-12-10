@@ -20,7 +20,11 @@ const createRoom = async (req, res) => {
             where: { roomCode },
         })
 
-        if (existingActiveRoom || existingScheduledRoom) {
+        const existingPastRoom = await prisma.pastRoom.findUnique({
+            where: { roomCode },
+        })
+
+        if (existingActiveRoom || existingScheduledRoom || existingPastRoom) {
             return res.status(400).json({
                 message: "Room code already exists. Please choose a different code.",
             })
@@ -89,15 +93,39 @@ const transferExpiredRooms = async () => {
         })
 
         for (const room of expiredRooms) {
-            await prisma.pastRoom.create({
-                data: {
-                    roomName: room.roomName,
-                    roomCode: room.roomCode,
-                    testModuleId: room.testModuleId,
-                    startTime: room.startTime,
-                    endTime: room.endTime
+
+            const existingPastRoom = await prisma.pastRoom.findUnique({
+                where: {
+                    roomCode: room.roomCode
                 }
             })
+
+            if (!existingPastRoom) {
+                await prisma.pastRoom.create({
+                    data: {
+                        roomName: room.roomName,
+                        roomCode: room.roomCode,
+                        testModuleId: room.testModuleId,
+                        startTime: room.startTime,
+                        endTime: room.endTime
+                    }
+                })
+            }
+
+            const leaderboardEntries = await prisma.leaderbaord.findMany({
+                where: { roomId: room.id },
+            })
+
+            for (const entry of leaderboardEntries) {
+                await prisma.leaderbaord.update({
+                    where: { id: entry.id },
+                    data: { 
+                        room: {
+                            disconnect: true
+                        },
+                     },
+                })
+            }
 
             await prisma.activeRoom.delete({
                 where: { id: room.id }
