@@ -86,34 +86,32 @@ const transferExpiredRooms = async () => {
     try {
         const now = new Date()
 
-        // Find all expired rooms
         const expiredRooms = await prisma.activeRoom.findMany({
             where: {
-                endTime: { lte: now },
-            },
+                endTime: { lte: now} 
+            }
         })
 
         for (const room of expiredRooms) {
-            // Retrieve or create the corresponding PastRoom
-            let pastRoom = await prisma.pastRoom.findUnique({
+
+            const existingPastRoom = await prisma.pastRoom.findUnique({
                 where: {
-                    roomCode: room.roomCode,
-                },
+                    roomCode: room.roomCode
+                }
             })
 
-            if (!pastRoom) {
-                pastRoom = await prisma.pastRoom.create({
+            if (!existingPastRoom) {
+                await prisma.pastRoom.create({
                     data: {
                         roomName: room.roomName,
                         roomCode: room.roomCode,
                         testModuleId: room.testModuleId,
                         startTime: room.startTime,
-                        endTime: room.endTime,
-                    },
+                        endTime: room.endTime
+                    }
                 })
             }
 
-            // Update leaderboard entries to reference the PastRoom's ID
             const leaderboardEntries = await prisma.leaderbaord.findMany({
                 where: { roomId: room.id },
             })
@@ -121,21 +119,22 @@ const transferExpiredRooms = async () => {
             for (const entry of leaderboardEntries) {
                 await prisma.leaderbaord.update({
                     where: { id: entry.id },
-                    data: {
-                        roomId: pastRoom.id, // Reference the PastRoom's ID
-                    },
+                    data: { 
+                        room: {
+                            disconnect: true
+                        },
+                     },
                 })
             }
 
-            // Delete the expired room from ActiveRoom
             await prisma.activeRoom.delete({
-                where: { id: room.id },
+                where: { id: room.id }
             })
         }
 
-        console.log(`Transferred ${expiredRooms.length} expired rooms`)
+        console.log(`Transferred ${expiredRooms.length} expiry rooms`)
     } catch (err) {
-        console.error("Error transferring expired rooms:", err)
+        console.log("Error transferring expired rooms:", err)
     }
 }
 
@@ -154,7 +153,7 @@ const activateScheuledRooms = async () => {
                 data: {
                     roomName: room.roomName,
                     roomCode: room.roomCode,
-                    testModuleId: room.testModuleId,
+                    testModuleId: room.testModuleID,
                     startTime: room.startTime,
                     endTime: room.endTime
                 }
