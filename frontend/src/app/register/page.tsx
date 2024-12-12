@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { FormField, FormItem, FormMessage } from "@/components/ui/form"
+import { useState } from "react"
 
 export default function StudentSignUp() {
   const methods = useForm({
@@ -16,19 +17,23 @@ export default function StudentSignUp() {
       confirmPassword: "",
     },
   })
+  const [loading, setLoading] = useState(false)
 
   const onSubmit = async (data: any) => {
     if (data.password !== data.confirmPassword) {
-      alert("Passwords do not match!")
+      methods.setError("confirmPassword", {
+        type: "manual",
+        message: "Passwords do not match",
+      })
       return
     }
+
+    setLoading(true)
 
     try {
       const response = await fetch("http://localhost:6573/api/auth/student/signup", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json" 
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: data.username,
           name: data.name,
@@ -40,11 +45,15 @@ export default function StudentSignUp() {
 
       if (response.ok) {
         alert("Signup Successful!")
+        methods.reset()
       } else {
         alert(responseData.message || "Signup Failed")
       }
     } catch (err) {
       console.error("Error during signup:", err)
+      alert("An error occurred. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -59,6 +68,7 @@ export default function StudentSignUp() {
           {/* Name Field */}
           <FormField
             name="name"
+            rules={{ required: "Name is required" }}
             render={({ field }) => (
               <FormItem>
                 <Label htmlFor="name">Name</Label>
@@ -71,6 +81,7 @@ export default function StudentSignUp() {
           {/* Username Field */}
           <FormField
             name="username"
+            rules={{ required: "Username is required" }}
             render={({ field }) => (
               <FormItem>
                 <Label htmlFor="username">Username</Label>
@@ -83,26 +94,18 @@ export default function StudentSignUp() {
           {/* Password Field */}
           <FormField
             name="password"
+            rules={{
+              required: "Password is required",
+              minLength: { value: 8, message: "Password must be at least 8 characters long" },
+              pattern: {
+                value: /(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*?!])/,
+                message: "Password must include uppercase, number, and special character",
+              },
+            }}
             render={({ field }) => (
               <FormItem>
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" placeholder="Password" {...field} />
-                <ul className="text-sm mt-2">
-                  <li className={field.value.length >= 8 ? "text-green-500" : "text-red-500"}>
-                    At least 8 characters
-                  </li>
-                  <li className={/[A-Z]/.test(field.value) ? "text-green-500" : "text-red-500"}>
-                    At least one uppercase letter
-                  </li>
-                  <li className={/\d/.test(field.value) ? "text-green-500" : "text-red-500"}>
-                    At least one number
-                  </li>
-                  <li
-                    className={/[@#$%^&*?!]/.test(field.value) ? "text-green-500" : "text-red-500"}
-                  >
-                    At least one special character (@$!%*?&)
-                  </li>
-                </ul>
                 <FormMessage />
               </FormItem>
             )}
@@ -111,36 +114,21 @@ export default function StudentSignUp() {
           {/* Confirm Password Field */}
           <FormField
             name="confirmPassword"
+            rules={{
+              required: "Confirm Password is required",
+            }}
             render={({ field }) => (
               <FormItem>
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm Password"
-                  {...field}
-                />
-                {field.value.length > 0 && (
-                  <p
-                    className={
-                      field.value === methods.getValues("password")
-                        ? "text-green-500 text-sm"
-                        : "text-red-500 text-sm"
-                    }
-                  >
-                    {field.value === methods.getValues("password")
-                      ? "Passwords match"
-                      : "Passwords do not match"}
-                  </p>
-                )}
+                <Input id="confirmPassword" type="password" placeholder="Confirm Password" {...field} />
                 <FormMessage />
               </FormItem>
             )}
           />
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full mt-4">
-            Sign Up
+          <Button type="submit" className="w-full mt-4" disabled={loading}>
+            {loading ? "Signing Up..." : "Sign Up"}
           </Button>
           <p className="mt-4 text-center">
             Already have an account? <Link href="/login/student">Login here</Link>.
