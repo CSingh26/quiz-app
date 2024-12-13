@@ -3,14 +3,25 @@
 @tailwind utilities;
 
 @font-face {
-    font-family: 'Gowun Dodum'; 
-    src: url('/fonts/GowunDodum-Regular.tff') format('ttf'); 
+    font-family: 'Roxborough CF'; 
+    src: url('/fonts/Roxborough_CF/Roxborough_CF.ttf') format('truetype'); 
     font-weight: normal; 
     font-style: normal;  
+}
+
+@font-face {
+  font-family: 'Gowun Dodum'; 
+  src: url('/fonts/GowunDodum-Regular.ttf') format('truetype'); 
+  font-weight: normal; 
+  font-style: normal;  
 }
   
 .custom-font {
     font-family: 'Gowun Dodum', sans-serif; 
+}
+
+.custom-font-1 {
+  font-family: 'Roxborough CF', sans-serif; 
 }
   
 @layer base {
