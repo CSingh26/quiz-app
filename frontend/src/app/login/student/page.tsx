@@ -6,15 +6,15 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { motion } from "framer-motion"
 import { Eye, EyeOff } from "lucide-react"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 export default function StudentLogin() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const handleLogin = async () => {
@@ -33,19 +33,28 @@ export default function StudentLogin() {
 
       const data = await response.json()
       if (response.ok) {
-        alert("Student Login Successful")
-        router.push("/dashboard/student")
+        toast.success("Student Login Successful", {
+          position: "top-center"
+        })
+        setTimeout(() => {
+          router.push("/dashboard/student")
+        }, 1500)
       } else {
-        setError(data.message || "Login Failed")
+        toast.error(data.message || "Login Failed", {
+          position: "top-center"
+        })
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
+      toast.error("An unexpected error occurred. Please try again.", {
+        position: "top-center"
+      })
       console.error("Login Error", err)
     }
   }
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen custom-font-1">
+      <ToastContainer position="top-right" autoClose={3000} />
       <motion.div
         initial={{ opacity: 0, x: -100 }}
         animate={{ opacity: 1, x: 0 }}
@@ -61,14 +70,6 @@ export default function StudentLogin() {
           >
             Login
           </motion.h1>
-
-          {/* Error Alert */}
-          {error && (
-            <Alert className="mb-6" variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
 
           <motion.div
             initial={{ opacity: 0, y: 50 }}

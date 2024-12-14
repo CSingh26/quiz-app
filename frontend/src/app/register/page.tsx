@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { motion } from "framer-motion"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 export default function StudentSignUp() {
   const methods = useForm({
@@ -19,9 +20,49 @@ export default function StudentSignUp() {
     },
   })
 
-  const onSubmit = async (data: any) => {
+  const validatePassword = (password: string) => {
+    const criteria = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /\d/.test(password),
+      specialChar: /[!@#$%^&*]/.test(password),
+    }
+
+    if (!criteria.length) return "Password must be at least 8 characters long."
+    if (!criteria.uppercase) return "Password must have at least one uppercase letter."
+    if (!criteria.number) return "Password must have at least one number."
+    if (!criteria.specialChar) return "Password must have at least one special character."
+    return null
+  }
+
+  const onSubmit = async (data: {
+    name: string
+    username: string
+    password: string
+    confirmPassword: string
+  }) => {
+    // Check if all fields are filled
+    if (!data.name || !data.username || !data.password || !data.confirmPassword) {
+      toast.error("All fields are required!", {
+        position: "top-center",
+      })
+      return
+    }
+
+    // Check if passwords match
     if (data.password !== data.confirmPassword) {
-      alert("Passwords do not match!")
+      toast.error("Passwords do not match!", {
+        position: "top-center",
+      })
+      return
+    }
+
+    // Validate password criteria
+    const passwordError = validatePassword(data.password)
+    if (passwordError) {
+      toast.error(passwordError, {
+        position: "top-center",
+      })
       return
     }
 
@@ -41,17 +82,19 @@ export default function StudentSignUp() {
       const responseData = await response.json()
 
       if (response.ok) {
-        alert("Signup Successful!")
+        toast.success("Signup Successful!")
       } else {
-        alert(responseData.message || "Signup Failed")
+        toast.error(responseData.message || "Signup Failed")
       }
     } catch (err) {
+      toast.error("An unexpected error occurred. Please try again.")
       console.error("Error during Signup:", err)
     }
   }
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen custom-font-1">
+      <ToastContainer position="top-right" autoClose={3000} />
       <motion.div
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
@@ -59,7 +102,7 @@ export default function StudentSignUp() {
         className="hidden md:flex md:w-1/2 bg-[#00004d] items-center justify-center"
       >
         <img
-          src="/Assests/Images/login.svg" 
+          src="/Assests/Images/login.svg"
           alt="3D Cubes"
           className="w-[120%] h-auto"
         />
@@ -79,12 +122,6 @@ export default function StudentSignUp() {
           >
             Student Sign Up
           </motion.h1>
-          <Alert className="mb-4 bg-blue-100 text-blue-800">
-            <AlertTitle>Important</AlertTitle>
-            <AlertDescription>
-              Ensure your password meets all requirements listed below.
-            </AlertDescription>
-          </Alert>
           <FormProvider {...methods}>
             <form
               onSubmit={methods.handleSubmit(onSubmit)}
@@ -144,44 +181,6 @@ export default function StudentSignUp() {
                       {...field}
                       className="mt-2 text-white bg-[#00004d] placeholder:text-white placeholder-opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg px-5 py-7 pr-12"
                     />
-                    <ul className="text-sm mt-2">
-                      <li
-                        className={
-                          field.value.length >= 8
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }
-                      >
-                        At least 8 characters
-                      </li>
-                      <li
-                        className={
-                          /[A-Z]/.test(field.value)
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }
-                      >
-                        At least one uppercase letter
-                      </li>
-                      <li
-                        className={
-                          /\d/.test(field.value)
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }
-                      >
-                        At least one number
-                      </li>
-                      <li
-                        className={
-                          /[@#$%^&*?!]/.test(field.value)
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }
-                      >
-                        At least one special character (@$!%*?&)
-                      </li>
-                    </ul>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -203,19 +202,6 @@ export default function StudentSignUp() {
                       {...field}
                       className="mt-2 text-white bg-[#00004d] placeholder:text-white placeholder-opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg px-5 py-7 pr-12"
                     />
-                    {field.value.length > 0 && (
-                      <p
-                        className={
-                          field.value === methods.getValues("password")
-                            ? "text-green-500 text-sm"
-                            : "text-red-500 text-sm"
-                        }
-                      >
-                        {field.value === methods.getValues("password")
-                          ? "Passwords match"
-                          : "Passwords do not match"}
-                      </p>
-                    )}
                     <FormMessage />
                   </FormItem>
                 )}
