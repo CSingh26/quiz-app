@@ -29,7 +29,7 @@ const fetchProfile = async (req, res) => {
 
         res.status(200).json({
             profile: {
-                name: student,
+                name: student.id,
                 username: student.username,
                 avatar: student.avatar,
                 background: student.background,
