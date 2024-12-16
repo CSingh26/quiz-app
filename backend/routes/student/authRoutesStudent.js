@@ -18,6 +18,7 @@ router.post("/logout", (req, res) => {
     })
 })
 
+//check
 router.get("/check", authenticationToken, (req, res) => {
     if (req.user.role !== "student") {
         return res.status(403).json({

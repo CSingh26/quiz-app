@@ -1,49 +1,74 @@
 const enc = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const  { PrismaClient } = require("@prisma/client")
+const upload = require("../../middleware/upload")
 
 require('dotenv').config({
     path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
 }) //configure your env and enter approraite path
 
 
-//signup
 const JWT_SEC = process.env.JWT_KEY
 const prisma = new PrismaClient()
 
+//signup
 const signup = async (req, res) => {
-    const { username, name, password } = req.body
-
-    try {
-        const existingStudent = await prisma.student.findUnique({
-            where: { username }
-        })
-
-        if (existingStudent) {
+    upload.fields([
+        {
+            name: "avatar",
+            maxCount: 1
+        }, 
+        {
+            name: "background",
+            maxCount: 1
+        }
+    ])(req, res, async (err) => {
+        if (err) {
             return res.status(400).json({
-                message: "Username alreaady in use!"
+                message: "Image Upload Failed",
+                error: err.message
             })
         }
 
-        const encPwd = await enc.hash(password, 10)
-        
-        const newStudent = await prisma.student.create({
-            data: {
-                username,
-                name,
-                password: encPwd
-            }
-        })
+        const { username, name, password } = req.body
 
-        res.status(201).json({
-            message: "Signup Successfull!"
-        })
-    } catch (err) {
-        console.error(err)
-        res.status(500).json({
-            message: "Internal Server Error!"
-        })
-    }
+        try {
+            const existingStudent = await prisma.student.findUnique({
+                where: { username }
+            })
+
+            if (existingStudent) {
+                return res.status(400).json({
+                    message: "Username already in use!"
+                })
+            }
+
+            const encPwd = await enc.hash(password, 10)
+
+            const avatarUrl = req.files?.avatar?.[0]?.location || process.env.DEFAULT_AVATAR_URL
+            const backgroundUrl = req.files?.background?.[0]?.location || process.env.DEFAULT_BACKGROUND_URL
+
+            const newStudent = await prisma.student.create({
+                data: {
+                    username,
+                    name,
+                    password: encPwd,
+                    avatar: avatarUrl,
+                    background: backgroundUrl
+                }
+            })
+
+            res.status(201).json({
+                message: "Signup Successful!"
+            })
+        } catch (err) {
+            console.error(err)
+            res.status(500).json({
+                message: "Internal Server Error"
+            })
+        }
+
+    })
 }
 
 //login

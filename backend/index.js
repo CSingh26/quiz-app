@@ -9,6 +9,7 @@ const stuRoutes = require('./routes/student/authRoutesStudent')
 const testRoutes = require('./routes/instructor/testRoutes')
 const roomRoutes = require('./routes/instructor/roomRoutes')
 const quizRoutes = require("./routes/student/quizRoutes")
+const profileRoutes = require("./routes/student/profileRoutes")
 
 const roomTransfer = require("./routes/instructor/roomTransfer")
 
@@ -32,6 +33,7 @@ app.use('/api/auth/student', stuRoutes)
 app.use("/api/tests", testRoutes)
 app.use("/api/room", roomRoutes)
 app.use("/api/quiz", quizRoutes)
+app.use("/api/student/profile", profileRoutes)
 
 const PORT = process.env.PORT || 3876
 
