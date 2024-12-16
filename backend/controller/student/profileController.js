@@ -1,5 +1,5 @@
 const { PrismaClient } = require("@prisma/client")
-const upload = require("../../middleware/upload")
+const { upload, uploadToS3 } = require("../../middleware/upload")
 
 const prisma = new PrismaClient()
 
@@ -66,18 +66,26 @@ const updateProfile = async (req, res) => {
         const { name, username } = req.body
 
         try {
-            const avatarUrl = req.files?.avatar?.[0]?.location
-            const backgroundUrl = req.files?.background?.[0]?.location
+            let avatarUrl
+            let backgroundUrl
+
+            if (req.files?.avatar) {
+                avatarUrl = await uploadToS3(req.files.avatar[0], "avatars")
+            }
+
+            if (req.files?.background) {
+                backgroundUrl = await uploadToS3(req.files.background[0], "backgrounds")
+            }
 
             const updatedStudent = await prisma.student.update({
                 where: {
                     id: studentId
                 },
                 data: {
-                    name: name,
-                    username: username,
-                    avatar: avatarUrl,
-                    background: backgroundUrl
+                    name: name || undefined,
+                    username: username || undefined,
+                    avatar: avatarUrl || undefined,
+                    background: backgroundUrl || undefined
                 }
             })
 

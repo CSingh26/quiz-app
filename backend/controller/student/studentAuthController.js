@@ -1,7 +1,6 @@
 const enc = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const  { PrismaClient } = require("@prisma/client")
-const upload = require("../../middleware/upload")
 
 require('dotenv').config({
     path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
@@ -13,22 +12,6 @@ const prisma = new PrismaClient()
 
 //signup
 const signup = async (req, res) => {
-    upload.fields([
-        {
-            name: "avatar",
-            maxCount: 1
-        }, 
-        {
-            name: "background",
-            maxCount: 1
-        }
-    ])(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({
-                message: "Image Upload Failed",
-                error: err.message
-            })
-        }
 
         const { username, name, password } = req.body
 
@@ -45,8 +28,8 @@ const signup = async (req, res) => {
 
             const encPwd = await enc.hash(password, 10)
 
-            const avatarUrl = req.files?.avatar?.[0]?.location || process.env.DEFAULT_AVATAR_URL
-            const backgroundUrl = req.files?.background?.[0]?.location || process.env.DEFAULT_BACKGROUND_URL
+            const avatarUrl = process.env.DEFAULT_AVATAR_URL
+            const backgroundUrl = process.env.DEFAULT_BACKGROUND_URL
 
             const newStudent = await prisma.student.create({
                 data: {
@@ -67,8 +50,6 @@ const signup = async (req, res) => {
                 message: "Internal Server Error"
             })
         }
-
-    })
 }
 
 //login
