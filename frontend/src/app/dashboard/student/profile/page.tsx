@@ -6,49 +6,52 @@ import { Button } from "@/components/ui/button"
 
 const Profile = () => {
   return (
-    <div className="relative w-full h-full">
-      {/* Background Image */}
-      <div className="absolute top-0 left-0 w-full h-[300px] overflow-hidden">
+    <div className="relative w-full h-screen flex flex-col"> 
+      {/* Container for Background Image and Avatar */}
+      <div className="relative w-full h-1/3 bg-black overflow-hidden">
         <Image
-          src={"/Assests/Images/default-background.jpg"} // Fallback image
+          src={"/Assests/Images/default-background.jpg"}
           alt="Background"
-          layout="fill"
-          objectFit="cover"
-          className="opacity-90"
+          fill
+          className="object-cover"
         />
-      </div>
-
-      {/* Profile Content */}
-      <div className="relative top-[180px] mx-auto w-[90%] md:w-[600px] bg-[#4a6fa5] text-white text-center rounded-md shadow-lg p-6">
-        {/* Avatar */}
-        <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+        {/* Avatar overlapping at the bottom */}
+        <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-[60px] flex flex-col items-center z-50">
           <Image
-            src={"/Assests/Images/default-user.png"} // Fallback avatar
+            src={"/Assests/Images/default-user.png"}
             alt="Profile Picture"
-            width={128}
-            height={128}
-            className="rounded-full border-4 border-white shadow-md"
+            width={200}
+            height={200}
+            className="z-50"
           />
         </div>
+      </div>
 
-        {/* User Information */}
-        <h2 className="mt-12 text-2xl font-bold">Username</h2>
-        <p className="text-lg mt-4">
-          <strong>Name:</strong> User
-        </p>
-        <p className="text-lg">
-          <strong>Email:</strong> user@example.com
-        </p>
+      {/* Username Section (just below the avatar) */}
+      <div className="flex flex-col items-center mt-20">
+        <h2 className="text-3xl font-bold tracking-wider text-white">
+          USERNAME
+        </h2>
+      </div>
 
-        {/* Update Profile Button */}
-        <div className="mt-6">
-          <Button
-            onClick={() => alert("Update profile clicked!")}
-            className="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-4 py-2 rounded-md"
-          >
-            Update Profile
-          </Button>
-        </div>
+      {/* User Details (left-aligned, below username) */}
+      <div className="flex flex-col text-white mt-8 px-8 max-w-sm">
+        <p className="text-lg mb-2">
+          <strong>NAME:</strong> User
+        </p>
+        <p className="text-lg mb-8">
+          <strong>EMAIL:</strong> user@example.com
+        </p>
+      </div>
+
+      {/* Update Profile Button at the bottom, centered */}
+      <div className="mt-auto flex justify-center mb-8">
+        <Button
+          onClick={() => alert("Update profile clicked!")}
+          className="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-md"
+        >
+          UPDATE PROFILE
+        </Button>
       </div>
     </div>
   )

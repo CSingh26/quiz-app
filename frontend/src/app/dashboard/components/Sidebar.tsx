@@ -5,7 +5,7 @@ import SidebarItem from "./SidebarItem"
 
 const Sidebar = () => {
   return (
-    <div className="h-screen w-20 bg-[#2d2e73] flex flex-col justify-between items-center py-6">
+    <div className="h-screen w-20 bg-[#eab2bb] flex flex-col justify-between items-center py-6">
 
       <div className="flex flex-col items-center gap-10 mt-auto">
         <SidebarItem
