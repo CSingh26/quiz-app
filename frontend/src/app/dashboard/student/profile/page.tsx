@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button"
 
 const Profile = () => {
   return (
-    <div className="relative w-full h-screen flex flex-col"> 
-      {/* Container for Background Image and Avatar */}
+    <div className="relative w-full h-screen flex flex-col custom-font-2">
       <div className="relative w-full h-1/3 bg-black overflow-hidden">
         <Image
           src={"/Assests/Images/default-background.jpg"}
@@ -15,40 +14,36 @@ const Profile = () => {
           fill
           className="object-cover"
         />
-        {/* Avatar overlapping at the bottom */}
-        <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-[60px] flex flex-col items-center z-50">
+      </div>
+      <div className="absolute top-[25%] left-1/2 transform -translate-x-1/2 flex flex-col items-center z-50">
+        <div className="w-[250px] h-[250px] relative">
           <Image
             src={"/Assests/Images/default-user.png"}
             alt="Profile Picture"
-            width={200}
-            height={200}
-            className="z-50"
+            width={250}
+            height={250}
+            className=""
           />
         </div>
-      </div>
-
-      {/* Username Section (just below the avatar) */}
-      <div className="flex flex-col items-center mt-20">
-        <h2 className="text-3xl font-bold tracking-wider text-white">
+        <h2 className="mt-[-100px] text-4xl font-bold tracking-wider text-white">
           USERNAME
         </h2>
       </div>
 
-      {/* User Details (left-aligned, below username) */}
-      <div className="flex flex-col text-white mt-8 px-8 max-w-sm">
-        <p className="text-lg mb-2">
-          <strong>NAME:</strong> User
-        </p>
-        <p className="text-lg mb-8">
-          <strong>EMAIL:</strong> user@example.com
-        </p>
+      <div className="flex-1 bg-[#3c6ca8] flex flex-col justify-start pt-32 px-8 text-white">
+        <div className="text-lg mb-8">
+          <p className="mb-4">
+            <strong>NAME: </strong>  User
+          </p>
+          <p className="mb-4">
+            <strong>EMAIL: </strong>  user@example.com
+          </p>
+        </div>
       </div>
-
-      {/* Update Profile Button at the bottom, centered */}
-      <div className="mt-auto flex justify-center mb-8">
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
         <Button
           onClick={() => alert("Update profile clicked!")}
-          className="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-md"
+          className="bg-[rgb(234,178,187)] hover:bg-[#f099a8] text-black font-semibold px-6 py-3 rounded-lg"
         >
           UPDATE PROFILE
         </Button>
