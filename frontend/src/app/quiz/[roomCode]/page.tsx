@@ -22,14 +22,11 @@ export default function Quiz() {
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                console.log("Fetching questions for room code:", roomCode)
-
                 const response = await fetch(
                     `http://localhost:6573/api/quiz/${encodeURIComponent(roomCode)}/get-questions`
                 )
 
                 const data = await response.json()
-                console.log("Fetched Questions:", data)
 
                 if (response.ok) {
                     setQuestions(
@@ -39,12 +36,10 @@ export default function Quiz() {
                         }))
                     )
                 } else {
-                    console.error("Error fetching questions:", data.message || "Unknown error")
                     alert("Failed to fetch questions")
                     router.push("/dashboard/student")
                 }
             } catch (err) {
-                console.error("Error fetching quiz questions:", err)
                 router.push("/dashboard/student")
             } finally {
                 setLoading(false)
@@ -95,53 +90,58 @@ export default function Quiz() {
     const currentQuestion = questions[currentQuestionIndex]
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-            <h1 className="text-3xl font-bold mb-4">Quiz</h1>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#3c6ca8]">
+            <h1 className="text-5xl font-bold mb-6 text-[#eab2bb] custom-font-2">QUIZ</h1>
             {currentQuestion ? (
-                <div className="w-full max-w-lg bg-white p-6 rounded shadow">
-                    <p className="text-lg font-bold mb-4">
-                        Question {currentQuestionIndex + 1} of {questions.length}
+                <div className="bg-[#2d2e73] rounded-3xl shadow-lg w-full max-w-2xl p-8 text-center">
+                    <p className="text-2xl font-semibold text-[#eab2bb] mb-6 custom-font-2">
+                        QUESTION {currentQuestionIndex + 1} OF {questions.length}
                     </p>
-                    <p className="mb-4">{currentQuestion.text}</p>
-                    <div className="mb-4">
+
+                    <p className="text-xl mb-6 custom-font-3 text-[#eab2bb]">{currentQuestion.text}</p>
+
+                    {/* Options */}
+                    <div className="flex flex-col gap-4 mb-6">
                         {currentQuestion.options.map((option, index) => (
                             <button
-                                key={index}
-                                className={`w-full mb-2 px-4 py-2 rounded ${
+                                key={option.id}
+                                className={`py-3 px-6 text-lg font-bold rounded-full transition-all custom-font-2 ${
                                     answers[currentQuestion.id] === option.text
-                                        ? "bg-green-500 text-white"
-                                        : "bg-gray-200"
+                                        ? "bg-pink-400 text-[#2d2e73] border-4 border-blue-300"
+                                        : "bg-[#eab2bb] text-[#00004d] hover:bg-pink-500 hover:text-white"
                                 }`}
                                 onClick={() => handleOptionSelect(currentQuestion.id, option.text)}
                             >
-                                {String.fromCharCode(97 + index)}. {option.text}
+                                {String.fromCharCode(65 + index)}. {option.text}
                             </button>
                         ))}
                     </div>
-                    <div className="mt-4 flex justify-between">
+
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between">
                         <button
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            className="custom-font-2 bg-[#eab2bb] hover:bg-pink-500 hover:text-white text-[#2d2e73] py-2 px-6 rounded-full font-bold"
                             disabled={currentQuestionIndex === 0}
                             onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
                         >
-                            Previous
+                            PREVIOUS
                         </button>
-                        <button
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                            disabled={currentQuestionIndex === questions.length - 1}
-                            onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-                        >
-                            Next
-                        </button>
+                        {currentQuestionIndex === questions.length - 1 ? (
+                            <button
+                                className="custom-font-2 bg-[#eab2bb] hover:bg-pink-500 hover:text-white text-[#2d2e73] py-2 px-6 rounded-full font-bold"
+                                onClick={handleSubmit}
+                            >
+                                SUBMIT
+                            </button>
+                        ) : (
+                            <button
+                                className="custom-font-2 bg-[#eab2bb] hover:bg-pink-500 hover:text-white text-[#2d2e73] py-2 px-6 rounded-full font-bold"
+                                onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
+                            >
+                                NEXT
+                            </button>
+                        )}
                     </div>
-                    {currentQuestionIndex === questions.length - 1 && (
-                        <button
-                            className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                            onClick={handleSubmit}
-                        >
-                            Submit Quiz
-                        </button>
-                    )}
                 </div>
             ) : (
                 <p>No questions available.</p>
