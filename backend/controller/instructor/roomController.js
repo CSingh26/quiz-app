@@ -173,12 +173,28 @@ const getActiveRooms = async (req, res) => {
     try {
         const activeRooms = await prisma.activeRoom.findMany({
             include: {
-                testModule: true
+                testModule: {
+                    include: {
+                        questions: true
+                    }
+                }
+            }
+        })
+
+        const now = new Date()
+
+        const detailedRooms = activeRooms.map((room) => {
+            const timeLeft = Math.max(0, new Date(room.endTime) - now)
+            return {
+                roomName: room.roomName,
+                roomCode: room.roomCode,
+                totalQuestions: room.testModule.questions.length,
+                timeLeft: timeLeft > 0 ? `${Math.ceil(timeLeft / (1000 * 60))} mins` : "Expired"
             }
         })
 
         res.status(200).json({
-            activeRooms
+            activeRooms: detailedRooms
         })
     } catch (err) {
         console.error("Error fetching active rooms:", err)
