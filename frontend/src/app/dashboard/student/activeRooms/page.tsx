@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import React, { useState, useEffect } from "react"
 
 interface Room {
@@ -11,15 +12,52 @@ interface Room {
 
 const ActiveRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([])
+  const router = useRouter()
+
+ const checkAuth = async () => {
+    try {
+      const res = await fetch("http://localhost:6573/api/auth/student/check", {
+        credentials: "include"
+      })
+
+      if (!res.ok) {
+        alert("Please login")
+        router.push("/login/student")
+      }
+    } catch (err) {
+      console.error("Error checking authentication", err)
+      router.push("/login/student")
+    }
+  }
+
+  const fetchActiveRooms = async () => {
+    try {
+      const res = await fetch("http://localhost:6573/api/room/get-active-rooms", {
+        credentials: "include"
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setRooms(data.activeRooms || [])
+      } else {
+        alert("Failed to fetch rooms")
+        console.error("Failed to fetch active rooms")
+      }
+    } catch (err) {
+      console.error("Error fetching active rooms: ", err)
+    }
+  }
 
   useEffect(() => {
-    // Simulating fetched data
-    const data = [
-      { id: "1", name: "Quiz 1", totalTime: 60, totalQuestions: 50 },
-      { id: "2", name: "Math Challenge", totalTime: 30, totalQuestions: 20 },
-    ]
-    setRooms(data)
+    const initialize = async () => {
+      await checkAuth()
+      await fetchActiveRooms
+    }
+
+    initialize()
   }, [])
+
+
 
   return (
     <div className="w-full h-screen bg-[#3c6ca8] text-white p-4 custom-font-2">

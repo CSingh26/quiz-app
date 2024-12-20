@@ -1,12 +1,63 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+
+interface PastQuiz {
+  id: String
+  name: String
+  attempted: number
+  correct: number
+  score: number
+  rank: number
+}
 
 const PastRooms = () => {
-  const pastQuizzes = [
-    { id: "1", name: "Quiz 1", attempted: 50, correct: 42, score: "85%", rank: 3 },
-    { id: "2", name: "Quiz 2", attempted: 40, correct: 36, score: "90%", rank: 2 },
-  ]
+  const [pastQuizzes, setPastQuizzes] = useState<PastQuiz[]>([])
+  const router = useRouter()
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("http://localhost:6573/api/auth/student/check", {
+        credentials: "include"
+      })
+
+      if (!res.ok) {
+        alert("Please login")
+        router.push("login/student")
+      }
+    } catch (err) {
+      console.error("Error checking authentication: ", err)
+      router.push("/login/student")
+    }
+  }
+
+  const fethPastRooms = async () => {
+    try {
+      const res = await fetch("http://localhost:6573/api/room/get-past-rooms", {
+        credentials: "include"
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setPastQuizzes(data.pastRooms || [])
+      } else {
+        console.error("Failed to fetch past rooms")
+        alert("Failed to fetch rooms")
+      }
+    } catch (err) {
+      console.error("Error fetching roomd: ", err)
+    }
+  }
+
+  useEffect(() => {
+    const initialize = async () => {
+      await checkAuth()
+      await fethPastRooms()
+    }
+
+    initialize()
+  }, [])
 
   return (
     <div className="w-full h-screen bg-[#3c6ca8] text-white p-8 custom-font-2">
@@ -18,7 +69,7 @@ const PastRooms = () => {
         <div className="flex flex-wrap gap-4">
           {pastQuizzes.map((quiz) => (
             <div
-              key={quiz.id}
+              key={quiz.id as React.Key}
               className="flex flex-col bg-[#eab2bb] text-[#00004d] rounded-lg p-4 shadow-lg w-auto h-auto"
             >
               <h2 className="text-xl font-bold text-center mb-2">
