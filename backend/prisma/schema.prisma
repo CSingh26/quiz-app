@@ -8,22 +8,22 @@ datasource db {
 }
 
 model Student {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  username String @unique
-  name     String
-  password String
-  avatar String @default("https://profilepicture-and-backgroundimage.s3.ap-south-1.amazonaws.com/default-user.png")
-  background String @default("https://profilepicture-and-backgroundimage.s3.ap-south-1.amazonaws.com/deafult-background.jpg")
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  username    String        @unique
+  name        String
+  password    String
+  avatar      String        @default("https://profilepicture-and-backgroundimage.s3.ap-south-1.amazonaws.com/default-user.png")
+  background  String        @default("https://profilepicture-and-backgroundimage.s3.ap-south-1.amazonaws.com/deafult-background.jpg")
   quizAttempt QuizAttempt[]
   leaderboard Leaderbaord[]
 }
 
 model TestModule {
-  id         String       @id @default(auto()) @map("_id") @db.ObjectId
-  name       String       @unique
-  questions  Question[]
-  ActiveRoom ActiveRoom[]
-  PastRoom   PastRoom[]
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  name          String          @unique
+  questions     Question[]
+  ActiveRoom    ActiveRoom[]
+  PastRoom      PastRoom[]
   ScheduledRoom ScheduledRoom[]
 }
 
@@ -44,54 +44,58 @@ model Option {
 }
 
 model ActiveRoom {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
   roomName     String
-  roomCode String @unique
-  testModule   TestModule @relation(fields: [testModuleId], references: [id])
-  testModuleId String     @db.ObjectId
+  roomCode     String        @unique
+  testModule   TestModule    @relation(fields: [testModuleId], references: [id])
+  testModuleId String        @db.ObjectId
   startTime    DateTime
   endTime      DateTime
-  leaderboard Leaderbaord[]
+  leaderboard  Leaderbaord[]
+  createdAt    DateTime      @default(now())
 }
 
 model PastRoom {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
   roomName     String
-  roomCode String @unique
-  testModule   TestModule @relation(fields: [testModuleId], references: [id])
-  testModuleId String     @db.ObjectId
+  roomCode     String        @unique
+  testModule   TestModule    @relation(fields: [testModuleId], references: [id])
+  testModuleId String        @db.ObjectId
   startTime    DateTime
   endTime      DateTime
+  QuizAttempt  QuizAttempt[]
 }
 
 model ScheduledRoom {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
   roomName     String
-  roomCode     String      @unique
-  testModuleId String      @db.ObjectId
-  testModule   TestModule  @relation(fields: [testModuleId], references: [id])
+  roomCode     String     @unique
+  testModuleId String     @db.ObjectId
+  testModule   TestModule @relation(fields: [testModuleId], references: [id])
   startTime    DateTime
   endTime      DateTime
-  createdAt    DateTime    @default(now())
+  createdAt    DateTime   @default(now())
 }
 
 model QuizAttempt {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  student    Student    @relation(fields: [studentId], references: [id])
-  studentId  String     @db.ObjectId
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  student    Student   @relation(fields: [studentId], references: [id])
+  studentId  String    @db.ObjectId
+  room       PastRoom? @relation(fields: [roomId], references: [id])
+  roomId     String?   @db.ObjectId
   answers    Json
   score      Int
   finishedAt DateTime?
 }
 
 model Leaderbaord {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  room       ActiveRoom?  @relation(fields: [roomId], references: [id])
-  roomId     String?      @db.ObjectId
-  student    Student     @relation(fields: [studentId], references: [id])
-  studentId  String      @db.ObjectId
-  score      Int
-  rank       Int
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  room      ActiveRoom? @relation(fields: [roomId], references: [id])
+  roomId    String?     @db.ObjectId
+  student   Student     @relation(fields: [studentId], references: [id])
+  studentId String      @db.ObjectId
+  score     Int
+  rank      Int
 
   @@unique([studentId, roomId])
 }

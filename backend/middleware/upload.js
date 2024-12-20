@@ -3,7 +3,7 @@ const multer = require("multer")
 const { v4: uuidv4 } = require("uuid")
 
 require('dotenv').config({
-    path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
+    // path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
 })
 
 console.log("Bucket Name:", process.env.AWS_BUCKET_NAME);

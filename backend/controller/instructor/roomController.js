@@ -204,9 +204,78 @@ const getActiveRooms = async (req, res) => {
     }
 }
 
+const getPastRooms = async (req, res) => {
+    try {
+        const  { studentId } = req.query
+
+        if(!studentId) {
+            return res.status(400).json({
+                message: "Student ID is required"
+            })
+        }
+
+        const pastRooms = await prisma.pastRoom.findMany({
+            include: {
+                testModule: {
+                    include: {
+                        questions: true
+                    }
+                }
+            }
+        })
+
+        const quizAttempts = await prisma.quizAttempt.findMany({
+            where: {
+                studentId
+            }
+        })
+
+        const leaderboardEntries = await prisma.leaderbaord.findMany({
+            where: {
+                studentId
+            }
+        })
+
+        const detailedRooms = pastRooms.map((room) => {
+            const quizAttempt = quizAttempts.find((attempt) => {
+                attempt.roomId === room.id
+            })
+
+            const leaderboardEntry = leaderboardEntries.find((entry) => {
+                entry.roomId === room.id
+            })
+
+            const totalQuestions = room.testModule.questions.length
+            const attemptedQuestions = quizAttempt?.answers ? Object.keys(quizAttempt.answers).length : 0
+            const correctAnswers = quizAttempt?.score || 0
+            const scorePercentage = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 100).toFixed(2) : "0"
+            const rank = leaderboardEntry?.rank | "NA"
+
+            return {
+                roomName: room.roomName,
+                totalQuestions,
+                attemptedQuestions,
+                correctAnswers,
+                scorePercentage: `${scorePercentage}%`,
+                rank
+            }
+
+        })
+        res.status(200).json({
+            pastRooms: detailedRooms
+        })
+    } catch (err) {
+        console.error("Error fetching past rooms:", err)
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
 module.exports = { 
     createRoom, 
     transferExpiredRooms, 
     activateScheuledRooms,
-    getActiveRooms
+    getActiveRooms,
+    getPastRooms
 }
