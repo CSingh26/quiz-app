@@ -4,28 +4,28 @@
 
 @font-face {
     font-family: 'Roxborough CF'; 
-    src: url('/fonts/Roxborough_CF/Roxborough_CF.ttf') format('truetype'); 
+    src: url('/Fonts/Roxborough_CF/Roxborough_CF.ttf') format('truetype'); 
     font-weight: normal; 
     font-style: normal;  
 }
 
 @font-face {
   font-family: 'Gowun Dodum'; 
-  src: url('/fonts/Gowun_Dodum/GowunDodum-Regular.ttf') format('truetype'); 
+  src: url('/Fonts/Gowun_Dodum/GowunDodum-Regular.ttf') format('truetype'); 
   font-weight: normal; 
   font-style: normal;  
 }
 
 @font-face {
   font-family: "Horizon";
-  src: url('/fonts/Horizon/horizon.otf') format('opentype');
+  src: url('/Fonts/Horizon/horizon.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Montserrat";
-  src: url('/fonts/Montserrat/Montserrat.ttf') format('truetype');
+  src: url('/Fonts/Montserrat/Montserrat.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
