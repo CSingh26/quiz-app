@@ -63,13 +63,13 @@ const Profile = () => {
         />
       </div>
       <div className="absolute top-[25%] left-1/2 transform -translate-x-1/2 flex flex-col items-center z-50">
-        <div className="w-[250px] h-[250px] relative">
+        <div className="w-[250px] h-[250px] relative rounded-full overflow-hidden">
           <Image
             src={profile?.avatar || "/Assests/Images/default-user.png"}
             alt="Profile Picture"
             width={250}
             height={250}
-            className="rounded-full"
+            className="rounded-full object-contain"
           />
         </div>
         <h2 className="mt-[-100px] text-4xl font-bold tracking-wider text-white">
