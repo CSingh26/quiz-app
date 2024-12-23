@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button"
 
 const Profile = () => {
   const [profile, setprofile] = useState<any>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    avatar: null,
+    background: null
+  })
   const router = useRouter()
 
   const checkAuth = async () => {
@@ -43,6 +50,40 @@ const Profile = () => {
     }
   }
 
+  const updateProfile = async () => {
+    const formObj = new FormData()
+    formObj.append("name", formData.name)
+    formObj.append("username", formData.username)
+
+    if (formData.avatar) {
+      formObj.append("avatar", formData.avatar)
+    }
+
+    if (formData.background) {
+      formObj.append("background", formData.background)
+    }
+
+    try {
+      const res = await fetch("http://localhost:6573/api/student/profile/update-profile", {
+        method: "PUT",
+        credentials: "include",
+        body: formObj
+      })
+
+      if (res.ok) {
+        alert("Profile Updated Successfully")
+        setIsEditing(false)
+        fetchProfile()
+      } else {
+        alert("Failed to update profile. Please try again")
+      }
+    } catch (err) {
+      console.error("Error updating profile", err)
+      alert("Error updating profile")
+    }
+
+  }
+
   useEffect(() => {
     const initialize = async () => {
       await checkAuth()
@@ -52,9 +93,27 @@ const Profile = () => {
     initialize()
   }, [])
 
+  const handleInputChange = (e:React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, files } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files ? files[0] : null
+    }))
+  }
+
   return (
     <div className="relative w-full h-screen flex flex-col custom-font-2">
-      <div className="relative w-full h-1/3 bg-black overflow-hidden">
+      {!isEditing ? (
+        <>
+          <div className="relative w-full h-1/3 bg-black overflow-hidden">
         <Image
           src={profile?.background || "/Assests/Images/default-background.jpg"}
           alt="Background"
@@ -95,6 +154,10 @@ const Profile = () => {
           UPDATE PROFILE
         </Button>
       </div>
+        </>
+      ): (
+        
+      )}
     </div>
   )
 }
