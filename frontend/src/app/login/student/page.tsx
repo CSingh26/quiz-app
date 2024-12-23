@@ -37,7 +37,7 @@ export default function StudentLogin() {
           position: "top-center"
         })
         setTimeout(() => {
-          router.push("/dashboard/student")
+          router.push("/dashboard/student/profile")
         }, 1500)
       } else {
         toast.error(data.message || "Login Failed", {

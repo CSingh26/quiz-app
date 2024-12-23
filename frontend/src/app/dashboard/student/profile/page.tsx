@@ -148,7 +148,7 @@ const Profile = () => {
           </div>
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <Button
-              onClick={() => alert("Update profile clicked!")}
+              onClick={() => setIsEditing(true)}
               className="bg-[rgb(234,178,187)] hover:bg-[#f099a8] text-black font-semibold px-6 py-3 rounded-lg"
             >
               UPDATE PROFILE
