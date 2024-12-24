@@ -12,6 +12,8 @@ interface Room {
 
 const ActiveRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([])
+  const [inputRoomCode, setInputRoomCode] = useState<string>("")
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const router = useRouter()
 
  const checkAuth = async () => {
@@ -48,10 +50,35 @@ const ActiveRooms = () => {
     }
   }
 
+  const verifyRoomCode = async (roomId:String) => {
+    try {
+      const res = await fetch(`http://localhost:6573/api/room/verify-room-code`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          roomId,
+          roomCode: inputRoomCode
+        })
+      })
+
+      if (res.ok) {
+        router.push(`/quiz/${inputRoomCode}`)
+      } else {
+        alert("Invalid Room Code. Please try again")
+      }
+    } catch (err) {
+      console.error("Error verifying the room code:", err)
+      alert("Failed to verify room code. Please try again")
+    }
+  }
+
   useEffect(() => {
     const initialize = async () => {
       await checkAuth()
-      await fetchActiveRooms
+      await fetchActiveRooms()
     }
 
     initialize()
@@ -78,9 +105,26 @@ const ActiveRooms = () => {
                 <p>TOTAL TIME: {room.totalTime} MINS</p>
                 <p>TOTAL QUESTIONS: {room.totalQuestions}</p>
               </div>
+              {selectedRoomId === room.id && (
+                <div className="mb-2">
+                  <input 
+                    type="text" 
+                    placeholder="" 
+                    value={inputRoomCode}
+                    onChange={(e) => setInputRoomCode(e.target.value)}
+                    className="w-full p-2 border-2 border-[#00004d] mb-2" 
+                  />
+                  <button
+                    onClick={() => verifyRoomCode(room.id)}
+                    className="px-4 py-2 bg-white text-[#00004d] rounded-lg font-bold hover:scale-105 transition-transform"
+                  >
+                    VERIFY ROOM CODE
+                  </button>
+                </div>
+              )}
               <div className="flex justify-center mt-2">
                 <button
-                  onClick={() => alert(`Starting ${room.name}`)}
+                  onClick={() => setSelectedRoomId(room.id)}
                   className="px-4 py-2 bg-white text-[#00004d] rounded-lg font-bold hover:scale-105 transition-transform"
                 >
                   START QUIZ
