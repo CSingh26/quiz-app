@@ -272,10 +272,50 @@ const getPastRooms = async (req, res) => {
     }
 }
 
+const verifyRoomCode = async (req, res) => {
+    try {
+        const { roomId, roomCode } = req.body
+
+        if (!roomId || !roomCode) {
+            return res.status(400).json({
+                message: "Room ID and Room Code are required",
+            })
+        }
+
+        const room = await prisma.activeRoom.findUnique({
+            where: {
+                id: roomId,
+            },
+        })
+
+        if (!room) {
+            return res.status(404).json({
+                message: "Room not found",
+            })
+        }
+
+        if (room.roomCode !== roomCode) {
+            return res.status(400).json({
+                message: "Invalid Room Code",
+            })
+        }
+
+        res.status(200).json({
+            message: "Room Code is valid",
+        })
+    } catch (err) {
+        console.error("Error verifying room code:", err)
+        res.status(500).json({
+            message: "Internal Server Error",
+        })
+    }
+}
+
 module.exports = { 
     createRoom, 
     transferExpiredRooms, 
     activateScheuledRooms,
     getActiveRooms,
-    getPastRooms
+    getPastRooms,
+    verifyRoomCode, 
 }
