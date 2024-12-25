@@ -7,12 +7,11 @@ interface LeaderboardEntry {
     studentName: string
     score: number
     rank: number
+    timeTaken: string
 }
 
 export default function Leaderboard() {
     const { roomCode } = useParams() as { roomCode: string }
-
-
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
 
     useEffect(() => {
@@ -43,37 +42,62 @@ export default function Leaderboard() {
         fetchLeaderboard()
     }, [roomCode])
 
+    const topThree = leaderboard.slice(0, 3)
+    const remaining = leaderboard.slice(3)
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-            <h1 className="text-3xl">Leaderboard</h1>
-            <div className="w-full max-w-lg bg-white p-6 rounded shadow">
-                <table className="table-auto w-full">
-                    <thead>
-                        <tr>
-                            <th className="px-4 py-2">Rank</th>
-                            <th className="px-4 py-2">Name</th>
-                            <th className="px-4 py-2">Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {leaderboard.length > 0 ? (
-                            leaderboard.map((entry, index) => (
-                                <tr key={index} className="text-center">
-                                    <td className="border px-4 py-2">{entry.rank}</td>
-                                    <td className="border px-4 py-2">{entry.studentName}</td>
-                                    <td className="border px-4 py-2">{entry.score}</td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={3} className="text-center text-gray-500 py-4">
-                                    No leaderboard data available.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#3c6ca8] custom-font-2">
+            <h1 className="text-5xl font-bold mb-10 text-[#eab2bb]">Leaderboard</h1>
+
+            {/* Top 3 Section */}
+            <div className="flex gap-4 mb-8">
+                {topThree.map((entry, index) => (
+                    <div
+                        key={entry.rank}
+                        className={`flex flex-col items-center justify-center bg-[#2d2e73] text-white rounded-lg p-6 w-52 h-40 shadow-lg ${
+                            index === 1 ? "scale-110" : ""
+                        }`}
+                    >
+                        <div className="w-16 h-16 bg-white rounded-full mb-2 flex items-center justify-center">
+                            <img
+                                src="/Assests/Images/default-user.png"
+                                alt="Profile"
+                                className="rounded-full object-cover w-full h-full"
+                            />
+                        </div>
+                        <h2 className="text-sm font-bold">{entry.studentName.toUpperCase()}</h2>
+                        <p className="text-xs">RANK: {entry.rank}</p>
+                        <p className="text-xs">SCORE: {entry.score}</p>
+                    </div>
+                ))}
             </div>
+
+            {/* Remaining Section */}
+            <div className="bg-[#2d2e73] text-[#eab2bb] rounded-lg shadow-lg p-6 w-4/5">
+                {remaining.map((entry) => (
+                    <div
+                        key={entry.rank}
+                        className="flex items-center justify-between bg-[#eab2bb] text-[#2d2e73] rounded-lg px-4 py-3 mb-4 shadow"
+                    >
+                        <p>
+                            <strong>RANK:</strong> {entry.rank}
+                        </p>
+                        <p>
+                            <strong>NAME:</strong> {entry.studentName}
+                        </p>
+                        <p>
+                            <strong>SCORE:</strong> {entry.score}
+                        </p>
+                        <p>
+                            <strong>TIME TAKEN:</strong> {entry.timeTaken || "N/A"}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            {remaining.length === 0 && (
+                <p className="text-center text-[#eab2bb] mt-4">No additional data available.</p>
+            )}
         </div>
     )
 }
