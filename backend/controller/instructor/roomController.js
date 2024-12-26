@@ -145,6 +145,9 @@ const activateScheuledRooms = async () => {
         const roomsToActivate = await prisma.scheduledRoom.findMany({
             where: {
                 startTime: { lte: now }
+            },
+            include: {
+                testModule: true
             }
         })
 
@@ -153,7 +156,7 @@ const activateScheuledRooms = async () => {
                 data: {
                     roomName: room.roomName,
                     roomCode: room.roomCode,
-                    testModuleId: room.testModuleID,
+                    testModuleId: room.testModuleId,
                     startTime: room.startTime,
                     endTime: room.endTime
                 }
@@ -184,12 +187,13 @@ const getActiveRooms = async (req, res) => {
         const now = new Date()
 
         const detailedRooms = activeRooms.map((room) => {
-            const timeLeft = Math.max(0, new Date(room.endTime) - now)
+            const timeLeft = 
+                Math.max(0, new Date(room.endTime) - new Date(room.startTime)) / 1000 / 60
             return {
+                id: room.id,
                 roomName: room.roomName,
-                roomCode: room.roomCode,
                 totalQuestions: room.testModule.questions.length,
-                timeLeft: timeLeft > 0 ? `${Math.ceil(timeLeft / (1000 * 60))} mins` : "Expired"
+                timeLeft: timeLeft.toFixed(0)
             }
         })
 
