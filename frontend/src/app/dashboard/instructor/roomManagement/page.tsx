@@ -21,7 +21,7 @@ const CreateRoomPage: React.FC = () => {
         const response = await fetch("http://localhost:6573/api/tests/get-modules")
         if (response.ok) {
           const data = await response.json()
-          setTestModules(data.modules || []) // Ensure modules is an array
+          setTestModules(data.modules || []) 
         } else {
           console.error("Failed to fetch test modules")
         }
@@ -96,7 +96,7 @@ const CreateRoomPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col items-center p-8 bg-[#3c6ca8]">
+    <div className="w-full h-screen flex flex-col items-center p-8 bg-[#3c6ca8] custom-font-2">
       <h1 className="text-3xl font-bold text-white mb-6">Create Room</h1>
       <form
         className="bg-[#00004d] p-6 rounded-lg shadow-lg w-full max-w-lg text-white"

@@ -103,7 +103,7 @@ const ActiveRoomsPage: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-screen bg-[#3c6ca8] p-6">
+        <div className="w-full h-screen bg-[#3c6ca8] p-6 custom-font-2">
             <div className="flex justify-center gap-8 text-white text-xl font-bold">
                 <button
                     onClick={() => setView("active")}
