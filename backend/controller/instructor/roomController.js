@@ -4,81 +4,61 @@ const prisma = new PrismaClient()
 
 const createRoom = async (req, res) => {
     try {
-        const { roomName, roomCode, testModuleName, startTime, endTime, expiryDate } = req.body
-
-        if (!roomName || !roomCode || !testModuleName || !startTime || !endTime || !expiryDate) {
-            return res.status(400).json({
-                message: "All fields are required"
-            })
-        }
-
-        const existingActiveRoom = await prisma.activeRoom.findUnique({
-            where: { roomCode },
+      const { roomName, roomCode, testModule, startDate, startTime, endTime } = req.body
+  
+      if (!roomName || !roomCode || !testModule || !startDate || !startTime || !endTime) {
+        return res.status(400).json({
+          message: "All fields are required",
         })
-
-        const existingScheduledRoom = await prisma.scheduledRoom.findUnique({
-            where: { roomCode },
+      }
+  
+      const existingRoom = await prisma.$transaction([
+        prisma.activeRoom.findUnique({ where: { roomCode } }),
+        prisma.scheduledRoom.findUnique({ where: { roomCode } }),
+        prisma.pastRoom.findUnique({ where: { roomCode } }),
+      ])
+  
+      if (existingRoom.some((room) => room !== null)) {
+        return res.status(400).json({
+          message: "Room code already exists. Please choose a different code.",
         })
-
-        const existingPastRoom = await prisma.pastRoom.findUnique({
-            where: { roomCode },
+      }
+  
+      const parsedStartTime = new Date(`${startDate}T${startTime}`)
+      const parsedEndTime = new Date(`${startDate}T${endTime}`)
+  
+      const roomData = {
+        roomName,
+        roomCode,
+        testModuleId: testModule, 
+        startTime: parsedStartTime,
+        endTime: parsedEndTime,
+      }
+  
+      if (parsedStartTime > new Date()) {
+        const futureRoom = await prisma.scheduledRoom.create({
+          data: roomData,
         })
-
-        if (existingActiveRoom || existingScheduledRoom || existingPastRoom) {
-            return res.status(400).json({
-                message: "Room code already exists. Please choose a different code.",
-            })
-        }
-
-        const testModule = await prisma.testModule.findUnique({
-            where: { name: testModuleName }
+  
+        return res.status(200).json({
+          message: "Room scheduled successfully",
+          roomCode: futureRoom.roomCode,
         })
-
-        if (!testModule) {
-            return res.status(404).json({
-                message: "Test module not found"
-            })
-        }
-
-        const parsedStartTime = new Date(`${expiryDate}T${startTime}`)
-        const parsedEndTime = new Date(`${expiryDate}T${endTime}`)
-
-        const roomData = {
-            roomName,
-            roomCode,
-            testModule: {
-                connect: {
-                    id: testModule.id
-                }
-            },
-            startTime: parsedStartTime,
-            endTime: parsedEndTime
-        }
-
-        if (parsedStartTime > new Date()) {
-            const futureRoom = await prisma.scheduledRoom.create({
-                data: roomData
-            })
-
-            res.status(200).json({
-                message: "Room scheduled Successfully",
-                roomCode,
-            })
-        } else {
-            const newRoom = await prisma.activeRoom.create({
-                data: roomData
-            })
-    
-            res.status(201).json({
-                message: "Room created successfully",
-                roomCode,
-            })
-        }
+      } else {
+        const activeRoom = await prisma.activeRoom.create({
+          data: roomData,
+        })
+  
+        return res.status(201).json({
+          message: "Room created successfully",
+          roomCode: activeRoom.roomCode,
+        })
+      }
     } catch (err) {
-        console.error("Error creating room:", err)
-        res.status(500).json({
-            message: "Internal Server Error"
-        })
+      console.error("Error creating room:", err)
+      return res.status(500).json({
+        message: "Internal Server Error",
+      })
     }
 }
 
@@ -315,6 +295,89 @@ const verifyRoomCode = async (req, res) => {
     }
 }
 
+const getScheduleRooms = async (req, res) => {
+    try {
+        const scheduledRooms = await prisma.scheduledRoom.findMany({
+            include: {
+                testModule: {
+                    include: {
+                        questions: true
+                    }
+                }
+            }   
+        })
+
+        const detailedRooms = scheduledRooms.map((room) => {
+            const timeLeft = 
+                Math.max(0, new Date(room.endTime) - new Date(room.startTime)) / 1000 / 60
+            return {
+                id: room.id,
+                roomName: room.roomName,
+                totalQuestions: room.testModule.questions.length,
+                timeLeft: timeLeft.toFixed(0)
+            }
+        })
+
+        res.status(200).json({
+            scheduledRooms: detailedRooms
+        })
+    } catch (err) {
+        console.error("Error fetching scheduled rooms:", err)
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
+const activateScheuledRoomNow = async (req, res) => {
+    try {
+        const { roomId } = req.params
+
+        if (!roomId) {
+            return res.status(400).json({
+                message: "Room ID is required"
+            })
+        }
+
+        const room = await prisma.scheduledRoom.findUnique({
+            where: { id: roomId },
+            include: {
+                testModule: true
+            }
+        })
+
+        if (!room) {
+            return res.status(404).json({
+                message: "Room not found"
+            })
+        }
+
+        const newActiveRoom = await prisma.activeRoom.create({
+            data: {
+                roomName: room.roomName,
+                roomCode: room.roomCode,
+                testModuleId: room.testModuleId,
+                startTime: room.startTime,
+                endTime: room.endTime
+            }
+        })
+
+        await prisma.scheduledRoom.delete({
+            where: { id: roomId }
+        })
+
+        res.status(200).json({
+            message: "Room activated successfully",
+            activeRoom: newActiveRoom
+        })
+    } catch (err) {
+        console.error("Error activating scheduled room:", err)
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
 module.exports = { 
     createRoom, 
     transferExpiredRooms, 
@@ -322,4 +385,6 @@ module.exports = {
     getActiveRooms,
     getPastRooms,
     verifyRoomCode, 
+    getScheduleRooms,
+    activateScheuledRoomNow
 }

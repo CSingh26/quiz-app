@@ -53,15 +53,25 @@ const CreateRoomPage: React.FC = () => {
       alert("Please fill out all fields")
       return
     }
+
+    const requestBody = {
+      roomName: formData.roomName,
+      roomCode: formData.roomCode,
+      testModule: formData.testModule,
+      startDate: formData.startDate,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+    }
+
     setLoading(true)
 
     try {
-      const response = await fetch("http://localhost:6573/api/rooms/create-room", {
+      const response = await fetch("http://localhost:6573/api/room/create-room", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestBody),
       })
       if (response.ok) {
         alert("Room created successfully")
@@ -74,13 +84,15 @@ const CreateRoomPage: React.FC = () => {
           testModule: "",
         })
       } else {
-        alert("Failed to create room")
+        const errorData = await response.json()
+        alert(`Failed to create room: ${errorData.message}`)
       }
     } catch (err) {
       console.error("Error creating room", err)
       alert("An error occurred while creating the room")
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

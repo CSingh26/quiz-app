@@ -48,7 +48,7 @@ export default function InstructorLogin() {
           autoClose: 3000,
         })
         setTimeout(() => {
-          router.push("/dashboard/instructor")
+          router.push("/dashboard/instructor/roomManagement")
         }, 2000)
       } else {
         toast.error(data.message || "Login Failed", {
