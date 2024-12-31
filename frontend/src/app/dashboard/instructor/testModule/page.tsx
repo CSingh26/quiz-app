@@ -37,8 +37,30 @@ const TestModulePage: React.FC = () => {
 
     return (
         <div>
-            <h1>Active Rooms</h1>
-            <p>This is the Active Rooms page for instructors.</p>
+            <h1>Test Module</h1>
+            <div>
+                <button onClick={() => setView("upload")}>Upload</button>
+                <button onClick={() => setView("view")}>View</button>
+            </div>
+            {view === "upload" && (
+                <div>
+                    <input type="file" onChange={handleFileChange} />
+                    <button>Upload</button>
+                </div>
+            )}
+            {view === "view" && (
+                <div>
+                    {loading ? (
+                        <div>Loading...</div>
+                    ) : (
+                        <ul>
+                            {modules.map(module => (
+                                <li key={module.id}>{module.name}</li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
