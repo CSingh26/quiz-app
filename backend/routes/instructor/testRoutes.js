@@ -32,4 +32,6 @@ router.post("/upload-test",
 
 router.get("/get-modules", testController.getTestModules)
 
+router.delete("/delete-module/:moduleId", testController.deleteTestModule)
+
 module.exports = router

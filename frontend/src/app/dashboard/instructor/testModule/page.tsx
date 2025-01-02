@@ -50,7 +50,7 @@ const TestModulePage: React.FC = () => {
 
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:6573/api/tests/uploadModule", {
+      const response = await fetch("http://localhost:6573/api/tests/upload-test", {
         method: "POST",
         body: formData,
       })
@@ -70,7 +70,7 @@ const TestModulePage: React.FC = () => {
 
   const deleteModule = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:6573/api/tests/deleteModule/${id}`, {
+      const response = await fetch(`http://localhost:6573/api/tests/delete-module/${id}`, {
         method: "DELETE",
       })
 

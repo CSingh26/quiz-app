@@ -106,4 +106,57 @@ const getTestModules = async (req, res) => {
     }
 }
 
-module.exports = { uploadQuestions, getTestModules }
+const deleteTestModule = async (req, res) => {
+    try {
+        const { moduleId } = req.params
+
+        if (!moduleId) {
+            return res.status(400).json({
+                message: "Module ID is required"
+            })
+        }
+
+        const module = await prisma.testModule.findUnique({
+            where: { id: moduleId }
+        })
+
+        if (!module) {
+            return res.status(404).json({
+                message: "Module not found"
+            })
+        }
+
+       const questions = await prisma.question.findMany({
+           where: { testModuleId: moduleId }
+       })
+
+       for (const question of questions) {
+           await prisma.option.deleteMany({
+               where: { questionId: question.id }
+           })
+       }
+
+       await prisma.question.deleteMany({
+           where: { testModuleId: moduleId }
+       })
+
+         await prisma.testModule.delete({
+              where: { id: moduleId }
+         })
+
+         res.status(200).json({
+             message: "Module deleted successfully"
+         })
+    } catch (err) {
+        console.error("Error deleting test module:", err)
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
+module.exports = { 
+    uploadQuestions, 
+    getTestModules,
+    deleteTestModule 
+}
