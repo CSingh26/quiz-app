@@ -18,7 +18,7 @@ const PastRoomPage: React.FC = () => {
     useEffect(() => {
         const fetchPastRooms = async () => {
             try {
-                const resposne = await fetch("http://localhost:6573/api/rooms/get-past-rooms")
+                const resposne = await fetch("http://localhost:6573/api/rooms/get-past-room-inx")
 
                 if (resposne.ok) {
                     const data = await resposne.json()

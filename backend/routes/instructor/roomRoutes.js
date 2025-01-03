@@ -34,4 +34,9 @@ router.get(
     roomController.getScheduleRooms
 )
 
+router.get(
+    "/get-past-room-ins",
+    roomController.getPastRoomForInstructors
+)
+
 module.exports = router
