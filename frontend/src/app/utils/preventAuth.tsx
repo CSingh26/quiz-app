@@ -1,35 +1,57 @@
 "use client"
 
-import { useEffect } from "react"
-import { useRouter } from "next/router"
+import React, { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
-export default function PreventAuth({ children }: { children: React.ReactNode }) {
+interface RoleProtectedProps {
+    children: React.ReactNode
+    requiredRole: "student" | "instructor"
+}
+
+export default function RoleProtectedLayout({ children, requiredRole}: RoleProtectedProps) {
     const router = useRouter()
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const res = await fetch("http://localhost:6573/api/auth/check", {
-                    credentials: "include", // Include cookies
+                    credentials: "include"
                 })
 
-                if (res.ok) {
+                if (!res.ok) {
+                    if (requiredRole === "student") {
+                        router.push("/login/student")
+                    } else {
+                        router.push("/login/instructor")
+                    }
+                } else {
                     const data = await res.json()
 
-                    // Redirect based on role
-                    if (data.role === "instructor") {
-                        router.push("/dashboard/instructor")
-                    } else if (data.role === "student") {
-                        router.push("/dashboard/student")
+                    if (data.role !== requiredRole) {
+                        await fetch("http://localhost:6573/api/auth/logout", {
+                            method: "POST",
+                            credentials: "include"
+                        })
+
+                        if (requiredRole === "student") {
+                            router.push("/login/student")
+                        } else {
+                            router.push("/login/instructor")
+                        }
                     }
                 }
-            } catch (error) {
-                console.error("Auth check failed:", error)
+            } catch (err) {
+                console.error("Auth check failed: ", err)
+
+                if (requiredRole === "student") {
+                    router.push("/login/student")
+                } else {
+                    router.push("/login/instructor")
+                }
             }
         }
 
         checkAuth()
-    }, [router])
-
+    }, [requiredRole, router])
     return <>{children}</>
 }

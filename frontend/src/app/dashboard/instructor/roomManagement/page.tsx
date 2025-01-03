@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 const CreateRoomPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,24 @@ const CreateRoomPage: React.FC = () => {
 
   const [testModules, setTestModules] = useState<{ name: string; id: string }[]>([])
   const [loading, setLoading] = useState(false)
+
+  const router = useRouter()
+  
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+          credentials: "include",
+        })
+  
+        if (!res.ok) {
+          alert("Please login as Instructor")
+          router.push("/login/instructor")
+        }
+      } catch (err) {
+        console.error("Error checking authentication", err)
+        router.push("/login/instructor")
+      }
+    }
 
   useEffect(() => {
     const fetchTestModules = async () => {
@@ -29,7 +48,11 @@ const CreateRoomPage: React.FC = () => {
         console.error("Error fetching test modules", err)
       }
     }
-    fetchTestModules()
+    const initialize = async () => {
+      await checkAuth()
+      fetchTestModules()
+    }
+    initialize()
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

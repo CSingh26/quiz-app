@@ -1,18 +1,42 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 const TestModulePage: React.FC = () => {
+
   const [view, setView] = useState<"upload" | "view">("upload")
   const [modules, setModules] = useState<{ name: string; id: string }[]>([])
   const [loading, setLoading] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [moduleName, setModuleName] = useState<string>("")
+  const router = useRouter()
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        alert("Please login as Instructor")
+        router.push("/login/instructor")
+      }
+    } catch (err) {
+      console.error("Error checking authentication", err)
+      router.push("/login/instructor")
+    }
+  }
 
   useEffect(() => {
-    if (view === "view") {
-      fetchModules()
+    const initialize = async () => {
+      await checkAuth()
+      if (view === "view") {
+        fetchModules()
+      }
     }
+
+    initialize()
   }, [view])
 
   const fetchModules = async () => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { format } from "path"
+import { useRouter } from "next/navigation"
 import React, { useEffect, useState} from "react"
 
 interface Room {
@@ -15,6 +15,23 @@ interface Room {
 const PastRoomPage: React.FC = () => {
     const [pastRooms, setPastRooms] = useState<Room[]>([])
     const [loading, setLoading] = useState<boolean>(true)
+    const router = useRouter()
+
+    const checkAuth = async () => {
+        try {
+          const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+            credentials: "include",
+          })
+    
+          if (!res.ok) {
+            alert("Please login as Instructor")
+            router.push("/login/instructor")
+          }
+        } catch (err) {
+          console.error("Error checking authentication", err)
+          router.push("/login/instructor")
+        }
+      }
 
     useEffect(() => {
         const fetchPastRooms = async () => {
@@ -41,7 +58,12 @@ const PastRoomPage: React.FC = () => {
             }
         }
 
-        fetchPastRooms()
+        const initialize = async () => {
+            await checkAuth()
+            await fetchPastRooms()
+        }
+
+        initialize()
     }, [])
 
   return (

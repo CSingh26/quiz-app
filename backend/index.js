@@ -10,6 +10,7 @@ const testRoutes = require('./routes/instructor/testRoutes')
 const roomRoutes = require('./routes/instructor/roomRoutes')
 const quizRoutes = require("./routes/student/quizRoutes")
 const profileRoutes = require("./routes/student/profileRoutes")
+const authRoutes = require("./routes/authRoutes")
 
 const roomTransfer = require("./routes/instructor/roomTransfer")
 
@@ -28,6 +29,7 @@ app.use(cookie())
 
 roomTransfer()
 
+app.use('/api/auth', authRoutes)
 app.use('/api/auth/ins', insRoutes)
 app.use('/api/auth/student', stuRoutes)
 app.use("/api/tests", testRoutes)

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 interface Room {
     id: string
@@ -14,6 +15,23 @@ const ActiveRoomsPage: React.FC = () => {
     const [scheduledRooms, setScheduledRooms] = useState<Room[]>([])
     const [view, setView] = useState<"active" | "scheduled">("active")
     const [loading, setLoading] = useState(false)
+    const router = useRouter()
+    
+        const checkAuth = async () => {
+            try {
+              const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+                credentials: "include",
+              })
+        
+              if (!res.ok) {
+                alert("Please login as Instructor")
+                router.push("/login/instructor")
+              }
+            } catch (err) {
+              console.error("Error checking authentication", err)
+              router.push("/login/instructor")
+            }
+          }
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -41,7 +59,12 @@ const ActiveRoomsPage: React.FC = () => {
             }
         }
 
-        fetchRooms()
+        const initialize = async () => {
+            await checkAuth()
+            await fetchRooms()
+        }
+
+        initialize()
     }, [])
 
     const activateRoom = async (roomId: string) => {
