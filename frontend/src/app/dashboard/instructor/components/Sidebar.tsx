@@ -2,8 +2,29 @@
 
 import React from "react"
 import SidebarItem from "./SidebarItem"
+import { useRouter } from "next/navigation"
 
 const Sidebar = () => {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:6573/api/auth/ins/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+
+      if (response.ok) {
+        localStorage.clear()
+        sessionStorage.clear()
+
+        router.push("/instructor/login")
+      }
+    } catch (error) {
+      console.log("Error during logout", error)
+    }
+  }
+
   return (
     <div className="h-screen w-20 bg-[#eab2bb] flex flex-col justify-between items-center py-6">
 
@@ -37,6 +58,7 @@ const Sidebar = () => {
       <div className="mt-auto">
         <SidebarItem
           icon="/Assests/Icons/logout.png"
+          onClick={handleLogout}
           href="/dashboard/instructor/logout"
           alt="Logout"
           active

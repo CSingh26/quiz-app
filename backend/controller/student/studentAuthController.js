@@ -98,4 +98,21 @@ const login = async (req, res) => {
     }
 }
 
-module.exports = {signup, login}
+const logout = (req, res) => {
+    res.cookie("token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 0,
+        path: "/"
+    })
+
+    res.status(200).json({
+        message: "Logout Successfull"
+    })
+}
+
+module.exports = {
+    signup, 
+    login, 
+    logout
+}

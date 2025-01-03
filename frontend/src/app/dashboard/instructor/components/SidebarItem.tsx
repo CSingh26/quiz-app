@@ -9,7 +9,8 @@ interface SidebarItemProps {
   icon: string 
   alt: string
   active: boolean
-  size?: number 
+  size?: number
+  onClick?: () => void 
 }
 
 export default function SidebarItem({ href, icon, alt, active, size = 48 }: SidebarItemProps) {

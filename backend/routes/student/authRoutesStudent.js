@@ -11,12 +11,7 @@ router.post("/signup", authController.signup)
 router.post("/login", authController.login)
 
 //logout
-router.post("/logout", (req, res) => {
-    res.clearCookie("token")
-    res.status(200).json({
-        message: "Logout out successfully"
-    })
-})
+router.post("/logout", authController.logout)
 
 //check
 router.get("/check", authenticationToken, (req, res) => {
