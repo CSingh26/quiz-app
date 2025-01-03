@@ -63,7 +63,7 @@ model PastRoom {
   testModuleId String        @db.ObjectId
   startTime    DateTime
   endTime      DateTime
-  QuizAttempt  QuizAttempt[]
+  QuizAttempt  QuizAttempt[] 
 }
 
 model ScheduledRoom {

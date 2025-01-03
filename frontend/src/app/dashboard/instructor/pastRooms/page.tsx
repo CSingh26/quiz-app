@@ -1,5 +1,6 @@
 "use client"
 
+import { format } from "path"
 import React, { useEffect, useState} from "react"
 
 interface Room {
@@ -18,11 +19,18 @@ const PastRoomPage: React.FC = () => {
     useEffect(() => {
         const fetchPastRooms = async () => {
             try {
-                const resposne = await fetch("http://localhost:6573/api/rooms/get-past-room-inx")
+                const resposne = await fetch("http://localhost:6573/api/room/get-past-room-ins")
 
                 if (resposne.ok) {
                     const data = await resposne.json()
-                    setPastRooms(data.pastRooms || [])
+                    const formattedRooms = data.pastRooms.map((room: any) => ({
+                        name: room.roomName,
+                        moduleName: room.moduleName,
+                        maxScore: room.maxScore,
+                        meanScore: room.meanScore,
+                        minScore: room.minScore
+                    }))
+                    setPastRooms(formattedRooms)
                 } else {
                     console.error("Failed to fetch past rooms")
                 }

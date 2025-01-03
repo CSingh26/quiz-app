@@ -410,7 +410,7 @@ const getPastRoomForInstructors = async (req, res) => {
 
             return {
                 roomName: room.roomName,
-                moduleName: room.testModule.name, // Fetch name from testModule
+                moduleName: room.testModule.name, 
                 totalQuestions,
                 maxScore,
                 meanScore,
