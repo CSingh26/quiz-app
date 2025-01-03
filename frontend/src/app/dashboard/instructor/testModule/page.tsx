@@ -7,6 +7,7 @@ const TestModulePage: React.FC = () => {
   const [modules, setModules] = useState<{ name: string; id: string }[]>([])
   const [loading, setLoading] = useState(false)
   const [file, setFile] = useState<File | null>(null)
+  const [moduleName, setModuleName] = useState<string>("")
 
   useEffect(() => {
     if (view === "view") {
@@ -17,7 +18,7 @@ const TestModulePage: React.FC = () => {
   const fetchModules = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:6573/api/tests/getModules")
+      const response = await fetch("http://localhost:6573/api/tests/get-modules")
       if (response.ok) {
         const data = await response.json()
         setModules(data.modules || [])
@@ -45,8 +46,14 @@ const TestModulePage: React.FC = () => {
       return
     }
 
+    if (!moduleName.trim()) {
+      alert("Please enter a module name")
+      return
+    }
+
     const formData = new FormData()
-    formData.append("testModule", file)
+    formData.append("testFile", file)
+    formData.append("testModuleName", moduleName)
 
     try {
       setLoading(true)
@@ -56,9 +63,13 @@ const TestModulePage: React.FC = () => {
       })
 
       if (response.ok) {
-        alert("Module uploaded")
+        alert("Module uploaded successfully!")
         setFile(null)
+        setModuleName("")
         fetchModules()
+      } else {
+        console.error("Error uploading module", response)
+        alert("Error uploading module")
       }
     } catch (err) {
       console.error("Error uploading module", err)
@@ -75,7 +86,7 @@ const TestModulePage: React.FC = () => {
       })
 
       if (response.ok) {
-        alert("Module deleted")
+        alert("Module deleted successfully!")
         setModules((prev) => prev.filter((module) => module.id !== id))
       } else {
         alert("Error deleting module")
@@ -107,20 +118,37 @@ const TestModulePage: React.FC = () => {
           <div className="bg-[#00004d] p-6 rounded-3xl shadow-lg w-1/2 flex flex-col justify-center items-center h-full">
             <h2 className="text-xl font-bold mb-4 text-center">Upload Your Test Module</h2>
             <form onSubmit={uploadModule} className="w-full flex flex-col items-center">
-              <label className="block mb-2 text-center">Choose Your Test Module</label>
-              <div className="realtive w-3/4 max-w-md mb-6">
+              <label htmlFor="moduleName" className="block mb-2 text-center">
+                Test Module Name
+              </label>
+              <input
+                type="text"
+                id="moduleName"
+                value={moduleName}
+                onChange={(e) => setModuleName(e.target.value)}
+                className="mb-4 p-2 border border-gray-300 w-3/4 text-black rounded-full"
+                placeholder="Enter module name"
+              />
+              <label htmlFor="fileUpload" className="block mb-2 text-center">
+                Choose Your Test Module
+              </label>
+              <div className="relative w-3/4 max-w-md mb-6">
                 <input
-                    type="file"
-                    accept="application/json"
-                    id="fileUpload"
-                    className="opacity-0 absolute w-full h-full cursor-pointer"
-                    onChange={handleFileChange}
+                  type="file"
+                  accept="application/json"
+                  id="fileUpload"
+                  name="testFile"
+                  className="hidden"
+                  onChange={handleFileChange}
                 />
-                <div className="bg-[#ac53a6] h-12 w-full rounded-full flex items-center justify-center cursor-pointer">
+                <label
+                  htmlFor="fileUpload"
+                  className="bg-[#ac53a6] h-12 w-full rounded-full flex items-center justify-center cursor-pointer"
+                >
                   <span className="text-white font-bold text-sm">
                     {file ? file.name : "CHOOSE FILE"}
                   </span>
-                </div>
+                </label>
               </div>
               <button
                 type="submit"
@@ -141,16 +169,6 @@ const TestModulePage: React.FC = () => {
     "answer": "Data storage"
   },
   {
-    "question": "What does EC2 stand for?",
-    "options": ["Elastic Cloud Compute", "Elastic Compute Cloud", "Elastic Container Compute", "Elastic Code Cloud"],
-    "answer": "Elastic Compute Cloud"
-  },
-  {
-    "question": "Which AWS service is used for object storage?",
-    "options": ["Amazon S3", "Amazon RDS", "Amazon DynamoDB", "Amazon Redshift"],
-    "answer": "Amazon S3"
-  },
-  {
     "question": "What is the default region when using AWS CLI without specifying a region?",
     "options": ["us-west-1", "us-east-1", "ap-southeast-1", "eu-central-1"],
     "answer": "us-east-1"
@@ -159,7 +177,17 @@ const TestModulePage: React.FC = () => {
     "question": "Which service helps developers store and retrieve any amount of data at any time?",
     "options": ["Amazon Glacier", "Amazon S3", "Amazon Elastic Block Store (EBS)", "Amazon Elastic File System (EFS)"],
     "answer": "Amazon S3"
-  }
+  },
+  {
+    "question": "What type of database is Amazon RDS?",
+    "options": ["NoSQL", "Relational database", "In-memory database", "Graph database"],
+    "answer": "Relational database"
+  },
+  {
+    "question": "Which AWS service is used for content delivery?",
+    "options": ["Amazon CloudFront", "Amazon Route 53", "AWS Direct Connect", "Amazon VPC"],
+    "answer": "Amazon CloudFront"
+  },
 ]`}
             </pre>
             <p className="mt-4 text-center">

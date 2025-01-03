@@ -4,8 +4,8 @@ const prisma = new PrismaClient()
 
 const uploadQuestions = async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded" })
+        if (!req.file || req.file.size === 0) {
+            return res.status(400).json({ message: "No file uploaded or file is empty" })
         }
 
         const { testModuleName } = req.body
@@ -13,7 +13,13 @@ const uploadQuestions = async (req, res) => {
             return res.status(400).json({ message: "Test Module name is required" })
         }
 
-        const questionData = JSON.parse(req.file.buffer.toString())
+        let questionData
+        try {
+            questionData = JSON.parse(req.file.buffer.toString())
+        } catch (err) {
+            return res.status(400).json({ message: "Invalid JSON file" })
+        }
+
         if (!Array.isArray(questionData)) {
             return res.status(400).json({
                 message: "Invalid JSON structure. Must be an array of questions",
@@ -37,9 +43,9 @@ const uploadQuestions = async (req, res) => {
         for (const questionItem of questionData) {
             const { question, options, answer } = questionItem
 
-            if (!question || !options || !answer) {
+            if (!question || !Array.isArray(options) || options.length < 2 || !answer) {
                 return res.status(400).json({
-                    message: "Each question must have 'question', 'options', and 'answer' fields",
+                    message: "Each question must have 'question', 'options' (min 2), and 'answer' fields",
                 })
             }
 
@@ -57,23 +63,19 @@ const uploadQuestions = async (req, res) => {
                 },
             })
 
-            await Promise.all(
-                options.map((optionText) =>
-                    prisma.option.create({
-                        data: {
-                            text: optionText,
-                            questionId: newQuestion.id,
-                        },
-                    })
-                )
-            )
+            await prisma.option.createMany({
+                data: options.map((optionText) => ({
+                    text: optionText,
+                    questionId: newQuestion.id,
+                })),
+            })
         }
 
         res.status(200).json({
             message: "Test module uploaded successfully!",
         })
     } catch (err) {
-        console.error("Error uploading questions", err)
+        console.error("Error uploading questions:", err)
         res.status(500).json({
             message: "Internal Server Error",
         })
@@ -85,23 +87,23 @@ const getTestModules = async (req, res) => {
         const testModules = await prisma.testModule.findMany({
             select: {
                 name: true,
-                id: true
-            }
+                id: true,
+            },
         })
 
         if (testModules.length === 0) {
             return res.status(404).json({
-                message: "No test modules found"
+                message: "No test modules found",
             })
         }
 
         res.status(200).json({
-            modules: testModules
+            modules: testModules,
         })
     } catch (err) {
         console.error("Error fetching test modules:", err)
         res.status(500).json({
-            message: "Internal Server Error"
+            message: "Internal Server Error",
         })
     }
 }
@@ -112,51 +114,45 @@ const deleteTestModule = async (req, res) => {
 
         if (!moduleId) {
             return res.status(400).json({
-                message: "Module ID is required"
+                message: "Module ID is required",
             })
         }
 
         const module = await prisma.testModule.findUnique({
-            where: { id: moduleId }
+            where: { id: moduleId },
         })
 
         if (!module) {
             return res.status(404).json({
-                message: "Module not found"
+                message: "Module not found",
             })
         }
 
-       const questions = await prisma.question.findMany({
-           where: { testModuleId: moduleId }
-       })
+        await prisma.option.deleteMany({
+            where: { question: { testModuleId: moduleId } },
+        })
 
-       for (const question of questions) {
-           await prisma.option.deleteMany({
-               where: { questionId: question.id }
-           })
-       }
+        await prisma.question.deleteMany({
+            where: { testModuleId: moduleId },
+        })
 
-       await prisma.question.deleteMany({
-           where: { testModuleId: moduleId }
-       })
+        await prisma.testModule.delete({
+            where: { id: moduleId },
+        })
 
-         await prisma.testModule.delete({
-              where: { id: moduleId }
-         })
-
-         res.status(200).json({
-             message: "Module deleted successfully"
-         })
+        res.status(200).json({
+            message: "Module deleted successfully",
+        })
     } catch (err) {
         console.error("Error deleting test module:", err)
         res.status(500).json({
-            message: "Internal Server Error"
+            message: "Internal Server Error",
         })
     }
 }
 
-module.exports = { 
-    uploadQuestions, 
+module.exports = {
+    uploadQuestions,
     getTestModules,
-    deleteTestModule 
+    deleteTestModule,
 }
