@@ -378,6 +378,57 @@ const activateScheuledRoomNow = async (req, res) => {
     }
 }
 
+const getPastRoomForInstructors = async (req, res) => {
+    try {
+        const pastRooms = await prisma.pastRoom.findMany({
+            include: {
+                testModule: {  
+                    include: {
+                        questions: true,  
+                    },
+                },
+                QuizAttempt: true, 
+            },
+        })
+
+        if (pastRooms.length === 0) {
+            return res.status(404).json({
+                message: "No past rooms found",
+            })
+        }
+
+        const detailedRooms = pastRooms.map((room) => {
+            const attempts = room.QuizAttempt || []
+            const scores = attempts.map((attempt) => attempt.score)
+
+            const totalQuestions = room.testModule.questions.length // Access questions from testModule
+            const maxScore = scores.length ? Math.max(...scores) : 0
+            const meanScore = scores.length
+                ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2)
+                : 0
+            const minScore = scores.length ? Math.min(...scores) : 0
+
+            return {
+                roomName: room.roomName,
+                moduleName: room.testModule.name, // Fetch name from testModule
+                totalQuestions,
+                maxScore,
+                meanScore,
+                minScore,
+            }
+        })
+
+        res.status(200).json({
+            pastRooms: detailedRooms,
+        })
+    } catch (err) {
+        console.error("Error fetching past rooms for instructors:", err)
+        res.status(500).json({
+            message: "Internal Server Error",
+        })
+    }
+}
+
 module.exports = { 
     createRoom, 
     transferExpiredRooms, 
@@ -386,5 +437,6 @@ module.exports = {
     getPastRooms,
     verifyRoomCode, 
     getScheduleRooms,
-    activateScheuledRoomNow
+    activateScheuledRoomNow,
+    getPastRoomForInstructors
 }
