@@ -25,7 +25,14 @@
 
 @font-face {
   font-family: "Montserrat";
-  src: url('/Fonts/Montserrat/Montserrat.ttf') format('truetype');
+  src: url('/Fonts/Noto_Serif/NotoSerif.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Noto Serif";
+  src: url('/Fonts/Noto_Serif/NotoSerif.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -42,8 +49,12 @@
   font-family: 'Horizon', 'sans-serif';
 }
 
-.custon-font-3 {
+.custom-font-3 {
   font-family: 'Montserrat', 'sans-serif';
+}
+
+.custom-font-4 {
+  font-family: 'Noto Serif', 'sans-serif';
 }
   
 @layer base {

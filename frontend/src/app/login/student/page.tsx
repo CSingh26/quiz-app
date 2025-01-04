@@ -79,7 +79,7 @@ export default function StudentLogin() {
           >
             <div className="pt-10">
               <Label htmlFor="username" className="text-2xl text-[#ac53a6]">
-                Email
+                Username
               </Label>
               <Input
                 id="username"
