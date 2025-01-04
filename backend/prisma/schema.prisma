@@ -11,6 +11,7 @@ model Student {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
   username    String        @unique
   name        String
+  email       String        @unique
   password    String
   avatar      String        @default("https://profilepicture-and-backgroundimage.s3.ap-south-1.amazonaws.com/default-user.png")
   background  String        @default("https://profilepicture-and-backgroundimage.s3.ap-south-1.amazonaws.com/deafult-background.jpg")

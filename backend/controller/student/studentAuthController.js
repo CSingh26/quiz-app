@@ -13,16 +13,26 @@ const prisma = new PrismaClient()
 //signup
 const signup = async (req, res) => {
 
-        const { username, name, password } = req.body
+        const { username, email, name, password } = req.body
 
         try {
-            const existingStudent = await prisma.student.findUnique({
+            const existingUsername = await prisma.student.findUnique({
                 where: { username }
             })
 
-            if (existingStudent) {
+            if (existingUsername) {
                 return res.status(400).json({
                     message: "Username already in use!"
+                })
+            }
+
+            const existingEmail = await prisma.student.findUnique({
+                where: { email }
+            })
+
+            if (existingEmail) {
+                return res.status(400).json({
+                    message: "Email already in use!"
                 })
             }
 

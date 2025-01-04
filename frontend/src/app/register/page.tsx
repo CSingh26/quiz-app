@@ -15,6 +15,7 @@ export default function StudentSignUp() {
     defaultValues: {
       name: "",
       username: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
@@ -38,12 +39,22 @@ export default function StudentSignUp() {
   const onSubmit = async (data: {
     name: string
     username: string
+    email: string
     password: string
     confirmPassword: string
   }) => {
     // Check if all fields are filled
-    if (!data.name || !data.username || !data.password || !data.confirmPassword) {
+    if (!data.name || !data.username || !data.email || !data.password || !data.confirmPassword) {
       toast.error("All fields are required!", {
+        position: "top-center",
+      })
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(data.email)) {
+      toast.error("Invalid email format!", {
         position: "top-center",
       })
       return
@@ -75,6 +86,7 @@ export default function StudentSignUp() {
         body: JSON.stringify({
           username: data.username,
           name: data.name,
+          email: data.email,
           password: data.password,
         }),
       })
@@ -148,10 +160,7 @@ export default function StudentSignUp() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <Label
-                      htmlFor="username"
-                      className="text-2xl text-[#ac53a6]"
-                    >
+                    <Label htmlFor="username" className="text-2xl text-[#ac53a6]">
                       Username
                     </Label>
                     <Input
@@ -165,13 +174,27 @@ export default function StudentSignUp() {
                 )}
               />
               <FormField
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label htmlFor="email" className="text-2xl text-[#ac53a6]">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      placeholder="Email"
+                      {...field}
+                      className="mt-2 text-white bg-[#00004d] placeholder:text-white placeholder-opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg px-5 py-7 pr-12"
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <Label
-                      htmlFor="password"
-                      className="text-2xl text-[#ac53a6]"
-                    >
+                    <Label htmlFor="password" className="text-2xl text-[#ac53a6]">
                       Password
                     </Label>
                     <Input
@@ -189,10 +212,7 @@ export default function StudentSignUp() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <Label
-                      htmlFor="confirmPassword"
-                      className="text-2xl text-[#ac53a6]"
-                    >
+                    <Label htmlFor="confirmPassword" className="text-2xl text-[#ac53a6]">
                       Confirm Password
                     </Label>
                     <Input
