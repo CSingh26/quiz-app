@@ -21,7 +21,7 @@ const ActiveRoomsPage: React.FC = () => {
     
     const checkAuth = async () => {
         try {
-            const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/ins/check`, {
                 credentials: "include",
             })
 

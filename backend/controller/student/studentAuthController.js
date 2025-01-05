@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken')
 const  { PrismaClient } = require("@prisma/client")
 
 require('dotenv').config({
-    // path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
 }) //configure your env and enter approraite path
 
 
@@ -44,6 +43,7 @@ const signup = async (req, res) => {
             const newStudent = await prisma.student.create({
                 data: {
                     username,
+                    email,
                     name,
                     password: encPwd,
                     avatar: avatarUrl,
@@ -113,7 +113,8 @@ const logout = (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 0,
-        path: "/"
+        path: "/",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax"
     })
 
     res.status(200).json({

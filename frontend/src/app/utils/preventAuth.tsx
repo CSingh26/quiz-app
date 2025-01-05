@@ -14,7 +14,7 @@ export default function RoleProtectedLayout({ children, requiredRole}: RoleProte
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const res = await fetch("http://localhost:6573/api/auth/check", {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/check`, {
                     credentials: "include"
                 })
 
@@ -28,7 +28,7 @@ export default function RoleProtectedLayout({ children, requiredRole}: RoleProte
                     const data = await res.json()
 
                     if (data.role !== requiredRole) {
-                        await fetch("http://localhost:6573/api/auth/logout", {
+                        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/logout`, {
                             method: "POST",
                             credentials: "include"
                         })

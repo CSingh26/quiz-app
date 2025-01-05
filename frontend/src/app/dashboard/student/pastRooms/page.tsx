@@ -20,7 +20,7 @@ const PastRooms = () => {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://localhost:6573/api/auth/student/check", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/student/check`, {
         credentials: "include",
       })
 
@@ -41,7 +41,7 @@ const PastRooms = () => {
 
   const fetchPastRooms = async () => {
     try {
-      const res = await fetch("http://localhost:6573/api/room/get-past-rooms", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/get-past-rooms`, {
         credentials: "include",
       })
 

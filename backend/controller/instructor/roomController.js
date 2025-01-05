@@ -190,7 +190,7 @@ const getActiveRooms = async (req, res) => {
 
 const getPastRooms = async (req, res) => {
     try {
-        const  { studentId } = req.query
+        const studentId  = req.user.id
 
         if(!studentId) {
             return res.status(400).json({

@@ -16,6 +16,7 @@ router.get(
 
 router.get(
     "/get-past-rooms",
+    authenticationToken,
      roomController.getPastRooms
 )
 router.post(

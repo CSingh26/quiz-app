@@ -78,7 +78,7 @@ export default function StudentSignUp() {
     }
 
     try {
-      const response = await fetch("http://localhost:6573/api/auth/student/signup", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/student/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

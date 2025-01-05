@@ -20,7 +20,7 @@ const ActiveRooms = () => {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://localhost:6573/api/auth/student/check", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/student/check`, {
         credentials: "include",
       })
 
@@ -41,7 +41,7 @@ const ActiveRooms = () => {
 
   const fetchActiveRooms = async () => {
     try {
-      const res = await fetch("http://localhost:6573/api/room/get-active-rooms", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/get-active-rooms`, {
         credentials: "include",
       })
 
@@ -67,7 +67,7 @@ const ActiveRooms = () => {
 
   const verifyRoomCode = async (roomId: String) => {
     try {
-      const res = await fetch(`http://localhost:6573/api/room/verify-room-code`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/verify-room-code`, {
         method: "POST",
         credentials: "include",
         headers: {

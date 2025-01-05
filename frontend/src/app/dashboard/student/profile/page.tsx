@@ -13,6 +13,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     name: "",
     username: "",
+    email: "",
     avatar: null,
     background: null,
   })
@@ -20,7 +21,7 @@ const Profile = () => {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://localhost:6573/api/auth/student/check", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/student/check`, {
         credentials: "include",
       })
 
@@ -42,7 +43,7 @@ const Profile = () => {
   const fetchProfile = async () => {
     try {
       const res = await fetch(
-        "http://localhost:6573/api/student/profile/get-profile",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}student/profile/get-profile`,
         { credentials: "include" }
       )
 
@@ -70,6 +71,7 @@ const Profile = () => {
     const formObj = new FormData()
     formObj.append("name", formData.name)
     formObj.append("username", formData.username)
+    formObj.append("email", formData.email)
 
     if (formData.avatar) {
       formObj.append("avatar", formData.avatar)
@@ -81,7 +83,7 @@ const Profile = () => {
 
     try {
       const res = await fetch(
-        "http://localhost:6573/api/student/profile/update-profile",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}student/profile/update-profile`,
         {
           method: "PUT",
           credentials: "include",
@@ -138,7 +140,6 @@ const Profile = () => {
       <ToastContainer position="top-center" autoClose={3000} />
       {!isEditing ? (
         <>
-          {/* Background Image */}
           <div className="relative w-full h-1/3 bg-black overflow-hidden">
             <Image
               src={profile?.background || "/Assests/Images/default-background.jpg"}
@@ -148,32 +149,32 @@ const Profile = () => {
             />
           </div>
 
-          {/* Profile Picture and Username */}
-          <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-50">
-            <div className="w-[150px] h-[150px] relative rounded-full overflow-hidden">
+          <div className="absolute top-[24%] left-1/2 transform -translate-x-1/2 flex flex-col items-center">
+            <div className="w-[250px] h-[250px] relative rounded-full overflow-hidden">
               <Image
                 src={profile?.avatar || "/Assests/Images/default-user.png"}
                 alt="Profile Picture"
-                width={150}
-                height={150}
+                width={250}
+                height={250}
                 className="rounded-full object-cover"
               />
             </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-wider text-white text-center">
-              {profile?.username?.toUpperCase() || "USERNAME"}
-            </h2>
           </div>
 
-          {/* Profile Details */}
           <div className="flex-1 bg-[#3c6ca8] flex flex-col justify-start pt-32 px-8 text-white">
             <div className="text-lg mb-8">
               <p className="mb-4">
+                <strong>USERNAME: </strong> {profile?.username || "Placeholder"}
+              </p>
+              <p className="mb-4">
                 <strong>NAME: </strong> {profile?.name || "Placeholder"}
+              </p>
+              <p className="mb-4">
+                <strong>EMAIL: </strong> {profile?.email || "Placeholder"}
               </p>
             </div>
           </div>
 
-          {/* Update Button */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <Button
               onClick={() => setIsEditing(true)}
@@ -209,6 +210,16 @@ const Profile = () => {
                 type="text"
                 name="username"
                 value={formData.username}
+                onChange={handleInputChange}
+                className="w-full p-2 text-black rounded-lg"
+              />
+            </div>
+            <div className="block text-sm font-semibold mb-1">
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 className="w-full p-2 text-black rounded-lg"
               />

@@ -15,7 +15,7 @@ const TestModulePage: React.FC = () => {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/ins/check`, {
         credentials: "include",
       })
 
@@ -48,7 +48,7 @@ const TestModulePage: React.FC = () => {
   const fetchModules = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:6573/api/tests/get-modules")
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}tests/get-modules`)
       if (response.ok) {
         const data = await response.json()
         setModules(data.modules || [])
@@ -99,7 +99,7 @@ const TestModulePage: React.FC = () => {
 
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:6573/api/tests/upload-test", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}tests/upload-test`, {
         method: "POST",
         body: formData,
       })
@@ -128,7 +128,7 @@ const TestModulePage: React.FC = () => {
 
   const deleteModule = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:6573/api/tests/delete-module/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}tests/delete-module/${id}`, {
         method: "DELETE",
       })
 

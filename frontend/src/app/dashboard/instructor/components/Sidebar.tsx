@@ -9,7 +9,7 @@ const Sidebar = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:6573/api/auth/ins/logout", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/ins/logout`, {
         method: "POST",
         credentials: "include",
       })
@@ -18,7 +18,7 @@ const Sidebar = () => {
         localStorage.clear()
         sessionStorage.clear()
 
-        router.push("/instructor/login")
+        router.push("/login/instructor")
       }
     } catch (error) {
       console.log("Error during logout", error)
@@ -59,7 +59,6 @@ const Sidebar = () => {
         <SidebarItem
           icon="/Assests/Icons/logout.png"
           onClick={handleLogout}
-          href="/dashboard/instructor/logout"
           alt="Logout"
           active
         />

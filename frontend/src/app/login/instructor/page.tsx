@@ -28,7 +28,7 @@ export default function InstructorLogin() {
 
     setLoading(true) // Set loading state
     try {
-      const response = await fetch("http://localhost:6573/api/auth/ins/login", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/ins/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

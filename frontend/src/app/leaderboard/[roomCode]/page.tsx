@@ -22,7 +22,7 @@ export default function Leaderboard() {
 
         const fetchLeaderboard = async () => {
             try {
-                const url = `http://localhost:6573/api/quiz/${encodeURIComponent(roomCode)}/leaderboard`
+                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}quiz/${encodeURIComponent(roomCode)}/leaderboard`
                 console.log("Fetching leaderboard from:", url)
 
                 const response = await fetch(url)

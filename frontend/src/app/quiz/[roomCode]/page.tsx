@@ -25,7 +25,7 @@ export default function Quiz() {
         const fetchQuestions = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:6573/api/quiz/${encodeURIComponent(roomCode)}/get-questions`
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}quiz/${encodeURIComponent(roomCode)}/get-questions`
                 )
 
                 const data = await response.json()
@@ -62,7 +62,7 @@ export default function Quiz() {
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch("http://localhost:6573/api/quiz/submit-quiz", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}quiz/submit-quiz`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

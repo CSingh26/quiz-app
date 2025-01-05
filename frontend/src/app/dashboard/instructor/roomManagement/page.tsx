@@ -21,7 +21,7 @@ const CreateRoomPage: React.FC = () => {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/ins/check`, {
         credentials: "include",
       })
 
@@ -43,7 +43,7 @@ const CreateRoomPage: React.FC = () => {
   useEffect(() => {
     const fetchTestModules = async () => {
       try {
-        const response = await fetch("http://localhost:6573/api/tests/get-modules")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}tests/get-modules`)
         if (response.ok) {
           const data = await response.json()
           setTestModules(data.modules || [])
@@ -106,7 +106,7 @@ const CreateRoomPage: React.FC = () => {
     setLoading(true)
 
     try {
-      const response = await fetch("http://localhost:6573/api/room/create-room", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/create-room`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
