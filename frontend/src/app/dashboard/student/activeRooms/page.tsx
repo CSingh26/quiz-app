@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation"
 import React, { useState, useEffect } from "react"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 interface Room {
   id: string
@@ -23,11 +25,16 @@ const ActiveRooms = () => {
       })
 
       if (!res.ok) {
-        alert("Please login")
+        toast.error("Please login to continue", { 
+          position: "top-center" 
+        })
         router.push("/login/student")
       }
     } catch (err) {
       console.error("Error checking authentication", err)
+      toast.error("Error during authentication. Please try again.", {
+        position: "top-center",
+      })
       router.push("/login/student")
     }
   }
@@ -41,12 +48,20 @@ const ActiveRooms = () => {
       if (res.ok) {
         const data = await res.json()
         setRooms(data.activeRooms || [])
+        toast.success("Active rooms fetched successfully!", { 
+          position: "top-center" 
+        })
       } else {
-        alert("Failed to fetch rooms")
+        toast.error("Failed to fetch active rooms", { 
+          position: "top-center" 
+        })
         console.error("Failed to fetch active rooms")
       }
     } catch (err) {
       console.error("Error fetching active rooms: ", err)
+      toast.error("An error occurred while fetching active rooms.", {
+        position: "top-center",
+      })
     }
   }
 
@@ -65,13 +80,20 @@ const ActiveRooms = () => {
       })
 
       if (res.ok) {
+        toast.success("Room code verified successfully!", { 
+          position: "top-center" 
+        })
         router.push(`/quiz/${inputRoomCode}`)
       } else {
-        alert("Invalid Room Code. Please try again")
+        toast.error("Invalid Room Code. Please try again.", { 
+          position: "top-center" 
+        })
       }
     } catch (err) {
       console.error("Error verifying the room code:", err)
-      alert("Failed to verify room code. Please try again")
+      toast.error("Failed to verify room code. Please try again.", {
+        position: "top-center",
+      })
     }
   }
 
@@ -86,6 +108,7 @@ const ActiveRooms = () => {
 
   return (
     <div className="w-full h-screen bg-[#3c6ca8] text-white p-4 custom-font-2">
+      <ToastContainer position="top-center" autoClose={3000} />
       <h1 className="text-3xl font-bold mb-6">Active Quizzes</h1>
       {rooms.length === 0 ? (
         <div className="text-4xl font-bold text-center mt-20">No Rooms Active</div>

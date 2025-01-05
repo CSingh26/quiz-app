@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 interface Room {
     id: string
@@ -17,21 +19,25 @@ const ActiveRoomsPage: React.FC = () => {
     const [loading, setLoading] = useState(false)
     const router = useRouter()
     
-        const checkAuth = async () => {
-            try {
-              const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+    const checkAuth = async () => {
+        try {
+            const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
                 credentials: "include",
-              })
-        
-              if (!res.ok) {
-                alert("Please login as Instructor")
+            })
+
+            if (!res.ok) {
+                toast.error("Please login as Instructor", { 
+                    position: "top-center" 
+                })
                 router.push("/login/instructor")
-              }
-            } catch (err) {
-              console.error("Error checking authentication", err)
-              router.push("/login/instructor")
             }
-          }
+        } catch (err) {
+            toast.error("Error checking authentication. Redirecting...", { 
+                position: "top-center" 
+            })
+            router.push("/login/instructor")
+        }
+    }
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -45,17 +51,23 @@ const ActiveRoomsPage: React.FC = () => {
                     const activeData = await activeResponse.json()
                     setActiveRooms(activeData.activeRooms || [])
                 } else {
-                    console.error("Failed to fetch active rooms")
+                    toast.error("Failed to fetch active rooms", { 
+                        position: "top-center" 
+                    })
                 }
 
                 if (scheduledResponse.ok) {
                     const scheduledData = await scheduledResponse.json()
                     setScheduledRooms(scheduledData.scheduledRooms || [])
                 } else {
-                    console.error("Failed to fetch scheduled rooms")
+                    toast.error("Failed to fetch scheduled rooms", { 
+                        position: "top-center" 
+                    })
                 }
             } catch (err) {
-                console.error("Error fetching rooms", err)
+                toast.error("Error fetching rooms", { 
+                    position: "top-center" 
+                })
             }
         }
 
@@ -71,21 +83,28 @@ const ActiveRoomsPage: React.FC = () => {
         setLoading(true)
         try {
             const response = await fetch(
-                `http://localhost:6573/api/room/activate-room/${roomId}`,
-                { method: "POST" }
+                `http://localhost:6573/api/room/activate-room/${roomId}`,{ 
+                    method: "POST" 
+                }
             )
 
             if (response.ok) {
-                alert("Room activated successfully")
+                toast.success("Room activated successfully", { 
+                    position: "top-center" 
+                })
                 const updatedScheduledRooms = scheduledRooms.filter((room) => room.id !== roomId)
                 setScheduledRooms(updatedScheduledRooms)
                 const activatedRoom = scheduledRooms.find((room) => room.id === roomId)
                 if (activatedRoom) setActiveRooms((prev) => [...prev, activatedRoom])
             } else {
-                console.error("Failed to activate room")
+                toast.error("Failed to activate room", { 
+                    position: "top-center" 
+                })
             }
         } catch (err) {
-            console.error("Error activating room", err)
+            toast.error("Error activating room", { 
+                position: "top-center" 
+            })
         } finally {
             setLoading(false)
         }
@@ -127,20 +146,17 @@ const ActiveRoomsPage: React.FC = () => {
 
     return (
         <div className="w-full h-screen bg-[#3c6ca8] p-6 custom-font-2">
+            <ToastContainer position="top-center" autoClose={3000} />
             <div className="flex justify-center gap-8 text-white text-xl font-bold">
                 <button
                     onClick={() => setView("active")}
-                    className={`${
-                        view === "active" ? "underline" : ""
-                    } cursor-pointer`}
+                    className={`${view === "active" ? "underline" : ""} cursor-pointer`}
                 >
                     Active Rooms
                 </button>
                 <button
                     onClick={() => setView("scheduled")}
-                    className={`${
-                        view === "scheduled" ? "underline" : ""
-                    } cursor-pointer`}
+                    className={`${view === "scheduled" ? "underline" : ""} cursor-pointer`}
                 >
                     Scheduled Rooms
                 </button>

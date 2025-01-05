@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const Profile = () => {
   const [profile, setProfile] = useState<any>(null)
@@ -23,11 +25,16 @@ const Profile = () => {
       })
 
       if (!res.ok) {
-        alert("Please login")
+        toast.error("Please login to continue", { 
+          position: "top-center" 
+        })
         router.push("/login/student")
       }
     } catch (err) {
       console.error("Error checking authentication: ", err)
+      toast.error("Authentication failed. Please try again.", {
+        position: "top-center",
+      })
       router.push("/login/student")
     }
   }
@@ -42,12 +49,20 @@ const Profile = () => {
       if (res.ok) {
         const data = await res.json()
         setProfile(data.profile)
+        toast.success("Profile fetched successfully!", { 
+          position: "top-center" 
+        })
       } else {
         console.error("Failed to fetch profile")
-        alert("Could not fetch profile. Please try again later")
+        toast.error("Could not fetch profile. Please try again later.", {
+          position: "top-center",
+        })
       }
     } catch (err) {
       console.error("Error fetching profile: ", err)
+      toast.error("An error occurred while fetching the profile.", {
+        position: "top-center",
+      })
     }
   }
 
@@ -75,15 +90,21 @@ const Profile = () => {
       )
 
       if (res.ok) {
-        alert("Profile Updated Successfully")
+        toast.success("Profile updated successfully!", { 
+          position: "top-center" 
+        })
         setIsEditing(false)
         fetchProfile()
       } else {
-        alert("Failed to update profile. Please try again")
+        toast.error("Failed to update profile. Please try again.", {
+          position: "top-center",
+        })
       }
     } catch (err) {
       console.error("Error updating profile", err)
-      alert("Error updating profile")
+      toast.error("An error occurred while updating the profile.", {
+        position: "top-center",
+      })
     }
   }
 
@@ -114,6 +135,7 @@ const Profile = () => {
 
   return (
     <div className="relative w-full h-screen flex flex-col custom-font-2">
+      <ToastContainer position="top-center" autoClose={3000} />
       {!isEditing ? (
         <>
           {/* Background Image */}

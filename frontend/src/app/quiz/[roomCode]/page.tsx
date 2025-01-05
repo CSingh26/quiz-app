@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 interface Question {
     id: string
@@ -36,10 +38,15 @@ export default function Quiz() {
                         }))
                     )
                 } else {
-                    alert("Failed to fetch questions")
+                    toast.error("Failed to fetch questions", { 
+                        position: "top-center" 
+                    })
                     router.push("/dashboard/student")
                 }
             } catch (err) {
+                toast.error("Error fetching questions. Redirecting...", { 
+                    position: "top-center" 
+                })
                 router.push("/dashboard/student")
             } finally {
                 setLoading(false)
@@ -68,14 +75,20 @@ export default function Quiz() {
             })
 
             if (response.ok) {
-                alert("Quiz submitted successfully")
+                toast.success("Quiz submitted successfully", { 
+                    position: "top-center" 
+                })
                 setSubmitted(true)
                 router.push(`/leaderboard/${roomCode}`)
             } else {
-                alert("Failed to submit quiz")
+                toast.error("Failed to submit quiz", { 
+                    position: "top-center" 
+                })
             }
         } catch (err) {
-            console.error("Error submitting quiz:", err)
+            toast.error("Error submitting quiz. Please try again.", { 
+                position: "top-center" 
+            })
         }
     }
 
@@ -91,16 +104,14 @@ export default function Quiz() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#3c6ca8]">
+            <ToastContainer position="top-center" autoClose={3000} />
             <h1 className="text-5xl font-bold mb-6 text-[#eab2bb] custom-font-2">QUIZ</h1>
             {currentQuestion ? (
                 <div className="bg-[#2d2e73] rounded-3xl shadow-lg w-full max-w-2xl p-8 text-center">
                     <p className="text-2xl font-semibold text-[#eab2bb] mb-6 custom-font-2">
                         QUESTION {currentQuestionIndex + 1} OF {questions.length}
                     </p>
-
                     <p className="text-xl mb-6 custom-font-3 text-[#eab2bb]">{currentQuestion.text}</p>
-
-                    {/* Options */}
                     <div className="flex flex-col gap-4 mb-6">
                         {currentQuestion.options.map((option, index) => (
                             <button
@@ -116,8 +127,6 @@ export default function Quiz() {
                             </button>
                         ))}
                     </div>
-
-                    {/* Navigation Buttons */}
                     <div className="flex justify-between">
                         <button
                             className="custom-font-2 bg-[#eab2bb] hover:bg-pink-500 hover:text-white text-[#2d2e73] py-2 px-6 rounded-full font-bold"

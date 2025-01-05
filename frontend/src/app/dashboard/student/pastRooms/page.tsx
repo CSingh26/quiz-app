@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 interface PastQuiz {
-  id: String
-  name: String
+  id: string
+  name: string
   attempted: number
   correct: number
   score: number
@@ -19,41 +21,54 @@ const PastRooms = () => {
   const checkAuth = async () => {
     try {
       const res = await fetch("http://localhost:6573/api/auth/student/check", {
-        credentials: "include"
+        credentials: "include",
       })
 
       if (!res.ok) {
-        alert("Please login")
-        router.push("login/student")
+        toast.error("Please log in to continue", { 
+          position: "top-center" 
+        })
+        router.push("/login/student")
       }
     } catch (err) {
       console.error("Error checking authentication: ", err)
+      toast.error("An error occurred during authentication.", {
+        position: "top-center",
+      })
       router.push("/login/student")
     }
   }
 
-  const fethPastRooms = async () => {
+  const fetchPastRooms = async () => {
     try {
       const res = await fetch("http://localhost:6573/api/room/get-past-rooms", {
-        credentials: "include"
+        credentials: "include",
       })
 
       if (res.ok) {
         const data = await res.json()
         setPastQuizzes(data.pastRooms || [])
+        toast.success("Past quizzes fetched successfully!", {
+          position: "top-center",
+        })
       } else {
+        toast.error("Failed to fetch past quizzes", { 
+          position: "top-center" 
+        })
         console.error("Failed to fetch past rooms")
-        alert("Failed to fetch rooms")
       }
     } catch (err) {
-      console.error("Error fetching roomd: ", err)
+      console.error("Error fetching rooms: ", err)
+      toast.error("An error occurred while fetching past quizzes.", {
+        position: "top-center",
+      })
     }
   }
 
   useEffect(() => {
     const initialize = async () => {
       await checkAuth()
-      await fethPastRooms()
+      await fetchPastRooms()
     }
 
     initialize()
@@ -61,6 +76,7 @@ const PastRooms = () => {
 
   return (
     <div className="w-full h-screen bg-[#3c6ca8] text-white p-8 custom-font-2">
+      <ToastContainer position="top-center" autoClose={3000} />
       <h1 className="text-3xl font-bold mb-6">Past Quizzes</h1>
 
       {pastQuizzes.length === 0 ? (
@@ -69,7 +85,7 @@ const PastRooms = () => {
         <div className="flex flex-wrap gap-4">
           {pastQuizzes.map((quiz) => (
             <div
-              key={quiz.id as React.Key}
+              key={quiz.id}
               className="flex flex-col bg-[#eab2bb] text-[#00004d] rounded-lg p-4 shadow-lg w-auto h-auto"
             >
               <h2 className="text-xl font-bold text-center mb-2">

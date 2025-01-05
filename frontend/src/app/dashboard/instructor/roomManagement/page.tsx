@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const CreateRoomPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -15,24 +17,28 @@ const CreateRoomPage: React.FC = () => {
 
   const [testModules, setTestModules] = useState<{ name: string; id: string }[]>([])
   const [loading, setLoading] = useState(false)
-
   const router = useRouter()
-  
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
-          credentials: "include",
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("http://localhost:6573/api/auth/instructor/check", {
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        toast.error("Please login as Instructor", { 
+          position: "top-center" 
         })
-  
-        if (!res.ok) {
-          alert("Please login as Instructor")
-          router.push("/login/instructor")
-        }
-      } catch (err) {
-        console.error("Error checking authentication", err)
         router.push("/login/instructor")
       }
+    } catch (err) {
+      console.error("Error checking authentication", err)
+      toast.error("Authentication error. Redirecting to login.", { 
+        position: "top-center" 
+      })
+      router.push("/login/instructor")
     }
+  }
 
   useEffect(() => {
     const fetchTestModules = async () => {
@@ -40,14 +46,23 @@ const CreateRoomPage: React.FC = () => {
         const response = await fetch("http://localhost:6573/api/tests/get-modules")
         if (response.ok) {
           const data = await response.json()
-          setTestModules(data.modules || []) 
+          setTestModules(data.modules || [])
+          toast.success("Test modules loaded successfully", { 
+            position: "top-center" 
+          })
         } else {
-          console.error("Failed to fetch test modules")
+          toast.error("Failed to fetch test modules", { 
+            position: "top-center" 
+          })
         }
       } catch (err) {
         console.error("Error fetching test modules", err)
+        toast.error("Error loading test modules", { 
+          position: "top-center" 
+        })
       }
     }
+
     const initialize = async () => {
       await checkAuth()
       fetchTestModules()
@@ -73,7 +88,9 @@ const CreateRoomPage: React.FC = () => {
       !formData.endTime ||
       !formData.testModule
     ) {
-      alert("Please fill out all fields")
+      toast.error("Please fill out all fields", { 
+        position: "top-center" 
+      })
       return
     }
 
@@ -97,7 +114,9 @@ const CreateRoomPage: React.FC = () => {
         body: JSON.stringify(requestBody),
       })
       if (response.ok) {
-        alert("Room created successfully")
+        toast.success("Room created successfully", { 
+          position: "top-center" 
+        })
         setFormData({
           roomName: "",
           roomCode: "",
@@ -108,11 +127,15 @@ const CreateRoomPage: React.FC = () => {
         })
       } else {
         const errorData = await response.json()
-        alert(`Failed to create room: ${errorData.message}`)
+        toast.error(`Failed to create room: ${errorData.message}`, { 
+          position: "top-center" 
+        })
       }
     } catch (err) {
       console.error("Error creating room", err)
-      alert("An error occurred while creating the room")
+      toast.error("An error occurred while creating the room", { 
+        position: "top-center" 
+      })
     } finally {
       setLoading(false)
     }
@@ -120,6 +143,7 @@ const CreateRoomPage: React.FC = () => {
 
   return (
     <div className="w-full h-screen flex flex-col items-center p-8 bg-[#3c6ca8] custom-font-2">
+      <ToastContainer position="top-center" autoClose={3000} />
       <h1 className="text-3xl font-bold text-white mb-6">Create Room</h1>
       <form
         className="bg-[#00004d] p-6 rounded-lg shadow-lg w-full max-w-lg text-white"

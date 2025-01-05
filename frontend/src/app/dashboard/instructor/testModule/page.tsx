@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const TestModulePage: React.FC = () => {
-
   const [view, setView] = useState<"upload" | "view">("upload")
   const [modules, setModules] = useState<{ name: string; id: string }[]>([])
   const [loading, setLoading] = useState(false)
@@ -19,11 +20,16 @@ const TestModulePage: React.FC = () => {
       })
 
       if (!res.ok) {
-        alert("Please login as Instructor")
+        toast.error("Please login as Instructor", { 
+          position: "top-center" 
+        })
         router.push("/login/instructor")
       }
     } catch (err) {
       console.error("Error checking authentication", err)
+      toast.error("Authentication error. Redirecting to login.", { 
+        position: "top-center" 
+      })
       router.push("/login/instructor")
     }
   }
@@ -46,11 +52,19 @@ const TestModulePage: React.FC = () => {
       if (response.ok) {
         const data = await response.json()
         setModules(data.modules || [])
+        toast.success("Modules loaded successfully", { 
+          position: "top-center" 
+        })
       } else {
-        console.error("Error fetching modules", response)
+        toast.error("Error fetching modules", { 
+          position: "top-center" 
+        })
       }
     } catch (err) {
       console.error("Error fetching modules", err)
+      toast.error("Error loading modules", { 
+        position: "top-center" 
+      })
     } finally {
       setLoading(false)
     }
@@ -66,12 +80,16 @@ const TestModulePage: React.FC = () => {
     e.preventDefault()
 
     if (!file) {
-      alert("Please select a file")
+      toast.error("Please select a file", { 
+        position: "top-center" 
+      })
       return
     }
 
     if (!moduleName.trim()) {
-      alert("Please enter a module name")
+      toast.error("Please enter a module name", { 
+        position: "top-center" 
+      })
       return
     }
 
@@ -87,17 +105,22 @@ const TestModulePage: React.FC = () => {
       })
 
       if (response.ok) {
-        alert("Module uploaded successfully!")
+        toast.success("Module uploaded successfully!", { 
+          position: "top-center" 
+        })
         setFile(null)
         setModuleName("")
         fetchModules()
       } else {
-        console.error("Error uploading module", response)
-        alert("Error uploading module")
+        toast.error("Error uploading module", { 
+          position: "top-center" 
+        })
       }
     } catch (err) {
       console.error("Error uploading module", err)
-      alert("Error uploading module")
+      toast.error("Error uploading module", { 
+        position: "top-center" 
+      })
     } finally {
       setLoading(false)
     }
@@ -110,19 +133,26 @@ const TestModulePage: React.FC = () => {
       })
 
       if (response.ok) {
-        alert("Module deleted successfully!")
+        toast.success("Module deleted successfully!", { 
+          position: "top-center" 
+        })
         setModules((prev) => prev.filter((module) => module.id !== id))
       } else {
-        alert("Error deleting module")
+        toast.error("Error deleting module", { 
+          position: "top-center" 
+        })
       }
     } catch (err) {
       console.error("Error deleting module", err)
-      alert("Error deleting module")
+      toast.error("Error deleting module", { 
+        position: "top-center" 
+      })
     }
   }
 
   return (
     <div className="w-full h-full flex flex-col items-center p-8 bg-[#3c6ca8] text-white custom-font-2">
+      <ToastContainer position="top-center" autoClose={3000} />
       <div className="flex justify-center gap-8 mb-6">
         <button
           onClick={() => setView("upload")}
@@ -181,42 +211,6 @@ const TestModulePage: React.FC = () => {
                 {loading ? "Uploading..." : "Upload Module"}
               </button>
             </form>
-          </div>
-
-          <div className="bg-[#00004d] p-6 rounded-3xl shadow-lg w-1/2 h-full justify-center items-center">
-            <h2 className="text-xl font-bold mb-4 text-center">Sample Test Module</h2>
-            <pre className="bg-[#3c6ca8] p-4 rounded-lg text-left text-sm text-white overflow-auto custom-font-3">
-              {`[
-  {
-    "question": "What is Amazon S3 used for?",
-    "options": ["Compute resources", "Data storage", "Monitoring resources", "Networking"],
-    "answer": "Data storage"
-  },
-  {
-    "question": "What is the default region when using AWS CLI without specifying a region?",
-    "options": ["us-west-1", "us-east-1", "ap-southeast-1", "eu-central-1"],
-    "answer": "us-east-1"
-  },
-  {
-    "question": "Which service helps developers store and retrieve any amount of data at any time?",
-    "options": ["Amazon Glacier", "Amazon S3", "Amazon Elastic Block Store (EBS)", "Amazon Elastic File System (EFS)"],
-    "answer": "Amazon S3"
-  },
-  {
-    "question": "What type of database is Amazon RDS?",
-    "options": ["NoSQL", "Relational database", "In-memory database", "Graph database"],
-    "answer": "Relational database"
-  },
-  {
-    "question": "Which AWS service is used for content delivery?",
-    "options": ["Amazon CloudFront", "Amazon Route 53", "AWS Direct Connect", "Amazon VPC"],
-    "answer": "Amazon CloudFront"
-  },
-]`}
-            </pre>
-            <p className="mt-4 text-center">
-              Please refer to the documentation for the correct format of the test module file.
-            </p>
           </div>
         </div>
       ) : (
