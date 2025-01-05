@@ -30,8 +30,12 @@ router.post(
     testController.uploadQuestions
 )
 
-router.get("/get-modules", testController.getTestModules)
+router.get("/get-modules", 
+    testController.getTestModules
+)
 
-router.delete("/delete-module/:moduleId", testController.deleteTestModule)
+router.delete("/delete-module/:moduleId", 
+    testController.deleteTestModule
+)
 
 module.exports = router

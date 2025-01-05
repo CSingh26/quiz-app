@@ -401,7 +401,7 @@ const getPastRoomForInstructors = async (req, res) => {
             const attempts = room.QuizAttempt || []
             const scores = attempts.map((attempt) => attempt.score)
 
-            const totalQuestions = room.testModule.questions.length // Access questions from testModule
+            const totalQuestions = room.testModule.questions.length 
             const maxScore = scores.length ? Math.max(...scores) : 0
             const meanScore = scores.length
                 ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2)

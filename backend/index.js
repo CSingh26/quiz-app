@@ -15,7 +15,6 @@ const authRoutes = require("./routes/authRoutes")
 const roomTransfer = require("./routes/instructor/roomTransfer")
 
 require('dotenv').config({
-    // path: '/Users/chaitanyasingh/Documents/Project/quiz-app/backend/.env'
 }) //configure your env and enter approraite path
 
 const app = express()
