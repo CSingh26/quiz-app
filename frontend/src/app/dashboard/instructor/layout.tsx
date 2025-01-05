@@ -1,5 +1,5 @@
 import React from "react"
-import Sidebar from "./components/Sidebar"
+import Sidebar from "../../components/dashboard/instructor/sidebar/Sidebar"
 
 import RoleProtectedLayout from "@/app/utils/preventAuth"
 
