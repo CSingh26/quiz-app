@@ -30,8 +30,7 @@ export default function PasswordInput({ value, onChange}: PasswordInputProps) {
             <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="text-white absolute top-[calc(50%+12px)] right-3 flex items-center 
-                           hover:text-white focus:outline-none transform -translate-y-1/2"
+                className="text-white absolute top-[calc(50%+20px)] right-3 flex items-center hover:text-white focus:outline-none transform -translate-y-1/2"
                 style={{ padding: 0, background: "none"}}
             >
                 {showPassword ? (

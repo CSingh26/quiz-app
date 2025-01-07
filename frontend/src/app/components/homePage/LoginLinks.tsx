@@ -12,7 +12,7 @@ const LoginLinks = () => {
                 Login as Student
             </Link>
             <Link 
-                href="/login/signup"
+                href="/login/instructor"
                 className='bg-white text-[#3c6ca8] px-10 py-4 rounded-full font-bold text-lg shawdow hover:scale-105 transition-transform'
             >
                 Login as Insructor

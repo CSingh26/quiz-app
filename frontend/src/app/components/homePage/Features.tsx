@@ -6,15 +6,15 @@ const features = [
         title: "Upload Quiz as Instructor",
     },
     {
-        image: "Assessts/HomePage/MakeRoom.png",
+        image: "Assests/HomePage/MakeRoom.png",
         title: "Create Room as Instructor",
     },
     {
-        image: "Assessts/HomePage/TakeQuiz.png",
+        image: "Assests/HomePage/TakeQuiz.png",
         title: "Take Quiz as Student",
     },
     {
-        image: "Assessts/HomePage/Ranling.png",
+        image: "Assests/HomePage/Ranking.png",
         title: "See Your Ranking in the Quiz",
     }
 ]

@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 
 import React, { useState } from "react"
 import { Input } from "@/components/ui/input"
@@ -64,6 +65,14 @@ export default function LoginForm({ handleLogin}: LoginFormProps) {
                     Login
                 </Button>
             </div>
+            <p
+                className="mt-6 text-center text-gray-600 text-xl"
+            >
+                Don't have an account?{" "}
+                <Link href="/register" className="text-[#00004d] underline">
+                    Register Here
+                </Link>
+            </p>
         </div>
     )
 }
