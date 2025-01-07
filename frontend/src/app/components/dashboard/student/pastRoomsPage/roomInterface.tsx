@@ -1,8 +1,7 @@
 export interface PastQuiz {
-    id: string
-    name: string
-    attempted: number
-    correct: number
-    score: number
-    rank: number
+    roomName: string
+    attemptedQuestions: number
+    correctAnswers: number
+    scorePercentage: string
+    rank: string
   }

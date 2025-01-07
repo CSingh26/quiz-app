@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { 
-  fetchPastRooms, 
-  checkAuth 
+import {
+  fetchPastRooms,
+  checkAuth,
 } from "../../../components/dashboard/student/Functions/pastRoomsFunctions"
 import PastRoomCard from "../../../components/dashboard/student/pastRoomsPage/pastRoomCard"
 import { PastQuiz } from "@/app/components/dashboard/student/pastRoomsPage/roomInterface"
@@ -24,6 +24,8 @@ const PastRooms = () => {
     initialize()
   }, [])
 
+  console.log("Past Quizzes: ", pastQuizzes) // Debugging
+
   return (
     <div className="w-full h-screen bg-[#3c6ca8] text-white p-8 custom-font-2">
       <ToastContainer position="top-center" autoClose={3000} />
@@ -33,8 +35,11 @@ const PastRooms = () => {
         <div className="text-4xl font-bold text-center mt-20">No Past Quizzes</div>
       ) : (
         <div className="flex flex-wrap gap-4">
-          {pastQuizzes.map((quiz) => (
-            <PastRoomCard key={quiz.id} quiz={quiz} />
+          {pastQuizzes.map((quiz, index) => (
+            <PastRoomCard
+              key={quiz.id || `${quiz.name}-${index}`} // Fallback key
+              quiz={quiz}
+            />
           ))}
         </div>
       )}

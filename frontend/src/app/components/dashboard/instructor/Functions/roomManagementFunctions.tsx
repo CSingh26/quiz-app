@@ -7,12 +7,19 @@ export const fetchTestModules = async (
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}tests/get-modules`)
     if (response.ok) {
       const data = await response.json()
-      setTestModules(data.modules || [])
-      toast.success("Test modules loaded successfully", { 
-        position: "top-center" 
-      })
+      if (Array.isArray(data.modules) && data.modules.length === 0) {
+        toast.info("No modules found", {
+          position: "top-center"
+        })
+      } else {
+        setTestModules(data.modules)
+        toast.success("Test modules loaded successfully", { 
+          position: "top-center" 
+        })
+      }
     } else {
-      toast.error("Failed to fetch test modules", { 
+      const errorData = await response.json()
+      toast.error(errorData.message || "Failed to fetch test modules", { 
         position: "top-center" 
     })
     }

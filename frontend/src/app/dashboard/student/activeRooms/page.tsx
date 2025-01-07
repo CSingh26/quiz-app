@@ -21,7 +21,6 @@ const ActiveRoomPage = () => {
 
   useEffect(() => {
     const initialize = async () => {
-      await checkAuth(toast, router)
       await fetchActiveRooms(setRooms, toast)
     }
 

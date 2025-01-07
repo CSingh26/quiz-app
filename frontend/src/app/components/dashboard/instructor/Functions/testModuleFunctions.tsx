@@ -71,9 +71,13 @@ export const deleteModule = async (
       toast.success("Module deleted successfully!", { position: "top-center" })
       setModules((prev) => prev.filter((module) => module.id !== id))
     } else {
-      toast.error("Error deleting module", { position: "top-center" })
+      toast.error("Error deleting module", { 
+        position: "top-center" 
+      })
     }
   } catch (err) {
-    toast.error("Error deleting module", { position: "top-center" })
+    toast.error("Error deleting module", { 
+      position: "top-center" 
+    })
   }
 }

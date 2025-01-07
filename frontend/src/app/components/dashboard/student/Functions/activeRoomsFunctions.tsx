@@ -34,7 +34,7 @@ export const verifyRoomCode = async (
     router: any
 ) => {
     try {
-        const res = await fetch(`${process.env.NEXT_ENV_PUBLIC_API_BASE_URL}room/verify-room-code`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/verify-room-code`, {
             method: "POST",
             credentials: "include",
             headers: {
