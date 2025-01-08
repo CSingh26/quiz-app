@@ -135,6 +135,7 @@ const getActiveRooms = async (req, res) => {
         const detailedRooms = activeRooms.map((room) => ({
             id: room.id,
             roomName: room.roomName,
+            totalTime: Math.floor((new Date(room.endTime) - new Date(room.startTime)) / 60000),
             totalQuestions: room.testModule.questions.length,
         }))
 
@@ -158,6 +159,13 @@ const getPastRooms = async (req, res) => {
         }
 
         const pastRooms = await prisma.pastRoom.findMany({
+            where: {
+                quizAttempts: {
+                    some: {
+                        studentId
+                    }
+                }
+            },
             include: { 
                 testModule: { 
                     include: { 
@@ -333,11 +341,29 @@ const getPastRoomForInstructors = async (req, res) => {
             }
         })
 
-        const detailedRooms = pastRooms.map((room) => ({
-            roomName: room.roomName,
-            moduleName: room.testModule.name,
-            totalQuestions: room.testModule.questions.length,
-        }))
+        const quizAttempts = await prisma.quizAttempt.findMany()
+
+        const detailedRooms = pastRooms.map((room) => {
+            const roomAttempts = quizAttempts.filter(
+                (attempt) => attempt.roomName === room.roomName
+            )
+
+            const scores = roomAttempts.map((attempt) => attempt.score)
+
+            const totalScores = scores.reduce((acc, score) => acc + score, 0)
+            const meanScore = scores.length > 0 ? (totalScores / scores.length).toFixed(2) : "N/A"
+            const maxScore = scores.length > 0 ? Math.max(...scores) : "N/A"
+            const minScore = scores.length > 0 ? Math.min(...scores) : "N/A"
+
+            return {
+                roomName: room.roomName,
+                moduleName: room.testModule.name,
+                totalQuestions: room.testModule.questions.length,
+                meanScore,
+                maxScore,
+                minScore,
+            }
+        })
 
         res.status(200).json({ 
             pastRooms: detailedRooms 

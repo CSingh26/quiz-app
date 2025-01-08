@@ -48,6 +48,8 @@ export default function QuizPage() {
             question={currentQuestion}
             selectedAnswer={answers[currentQuestion.id]}
             onSelect={handleOptionSelect}
+            questionNumber={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
           />
           <QuizNavigation
             currentIndex={currentQuestionIndex}

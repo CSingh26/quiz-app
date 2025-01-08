@@ -10,17 +10,24 @@ interface QuestionDisplayProps {
   question: Question
   selectedAnswer: string | undefined
   onSelect: (questionId: string, option: string) => void
+  questionNumber: number
+  totalQuestions: number
 }
 
 const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   question,
   selectedAnswer,
   onSelect,
+  questionNumber,
+  totalQuestions,
 }) => {
   return (
-    <div className="bg-[#2d2e73] rounded-3xl shadow-lg w-full max-w-2xl p-8 text-center">
-      <p className="text-xl mb-6 custom-font-3 text-[#eab2bb]">{question.text}</p>
-      <div className="flex flex-col gap-4 mb-6">
+    <div className="bg-[#2d2e73] rounded-xl shadow-lg w-full max-w-2xl p-6 text-center">
+      <h2 className="text-2xl font-bold text-[#eab2bb] custom-font-2 mb-4">
+        QUESTION {questionNumber} OF {totalQuestions}
+      </h2>
+      <p className="text-lg mb-6 custom-font-3 text-[#eab2bb]">{question.text}</p>
+      <div className="flex flex-col gap-4">
         {question.options.map((option, index) => (
           <button
             key={option.id}

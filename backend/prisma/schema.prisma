@@ -46,7 +46,7 @@ model Option {
 
 model ActiveRoom {
   id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  roomName     String
+  roomName     String        @unique
   roomCode     String        @unique
   testModule   TestModule    @relation(fields: [testModuleId], references: [id])
   testModuleId String        @db.ObjectId
@@ -57,17 +57,18 @@ model ActiveRoom {
 
 model PastRoom {
   id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  roomName     String
+  roomName     String        @unique
   roomCode     String        @unique
   testModule   TestModule    @relation(fields: [testModuleId], references: [id])
   testModuleId String        @db.ObjectId
   startTime    DateTime
   endTime      DateTime
+  quizAttempts QuizAttempt[]
 }
 
 model ScheduledRoom {
   id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  roomName     String
+  roomName     String     @unique
   roomCode     String     @unique
   testModuleId String     @db.ObjectId
   testModule   TestModule @relation(fields: [testModuleId], references: [id])
@@ -81,6 +82,7 @@ model QuizAttempt {
   student    Student   @relation(fields: [studentId], references: [id])
   studentId  String    @db.ObjectId
   roomName   String
+  pastRoom   PastRoom? @relation(fields: [roomName], references: [roomName])
   answers    Json
   score      Int
   finishedAt DateTime?
