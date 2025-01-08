@@ -117,7 +117,8 @@ const updateProfile = async (req, res) => {
                     name: name || undefined,
                     username: username || undefined,
                     avatar: avatarUrl || undefined,
-                    background: backgroundUrl || undefined
+                    background: backgroundUrl || undefined,
+                    email: email || undefined
                 }
             })
 
