@@ -1,14 +1,14 @@
 import { toast } from "react-toastify"
 
 export const fetchQuestions = async (
-  roomCode: string,
+  roomName: string,
   setQuestions: React.Dispatch<React.SetStateAction<any[]>>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
   router: any
 ) => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}quiz/${encodeURIComponent(roomCode)}/get-questions`
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}quiz/${encodeURIComponent(roomName)}/get-questions`
     )
     const data = await response.json()
 
@@ -20,12 +20,16 @@ export const fetchQuestions = async (
         }))
       )
     } else {
-      toast.error("Failed to fetch questions", { position: "top-center" })
-      router.push("/dashboard/student")
+      toast.error("Failed to fetch questions", { 
+        position: "top-center" 
+      })
+      router.push("/dashboard/student/activeRooms")
     }
   } catch (err) {
-    toast.error("Error fetching questions. Redirecting...", { position: "top-center" })
-    router.push("/dashboard/student")
+    toast.error("Error fetching questions. Redirecting...", { 
+      position: "top-center" 
+    })
+    router.push("/dashboard/student/activeRooms")
   } finally {
     setLoading(false)
   }
@@ -47,12 +51,18 @@ export const submitQuiz = async (
     })
 
     if (response.ok) {
-      toast.success("Quiz submitted successfully", { position: "top-center" })
+      toast.success("Quiz submitted successfully", { 
+        position: "top-center" 
+      })
       router.push(`/leaderboard/${roomCode}`)
     } else {
-      toast.error("Failed to submit quiz", { position: "top-center" })
+      toast.error("Failed to submit quiz", { 
+        position: "top-center" 
+      })
     }
   } catch (err) {
-    toast.error("Error submitting quiz. Please try again.", { position: "top-center" })
+    toast.error("Error submitting quiz. Please try again.", { 
+      position: "top-center" 
+    })
   }
 }

@@ -53,7 +53,7 @@ const getQuizQuestions = async (req, res) => {
 
 const submitQuiz = async (req, res) => {
     try {
-        const { roomCode, answers } = req.body
+        const { answers, roomCode } = req.body
 
         const room = await prisma.activeRoom.findUnique({
             where: { roomCode },
@@ -89,6 +89,7 @@ const submitQuiz = async (req, res) => {
         await prisma.quizAttempt.create({
             data: {
                 studentId: studentID,
+                roomName: room.roomName,
                 answers, 
                 score,
                 finishedAt: new Date(),
@@ -97,19 +98,19 @@ const submitQuiz = async (req, res) => {
 
         await prisma.leaderbaord.upsert({
             where: {
-              studentId_roomId: {
-                studentId: studentID,
-                roomId: room.id,
-              },
+                studentId_roomName: {
+                    studentId: studentID,
+                    roomName: room.roomName,
+                },
             },
             update: { score },
             create: {
-              studentId: studentID,
-              roomId: room.id,
-              score,
-              rank: 0, 
+                studentId: studentID,
+                roomName: room.roomName,
+                score,
+                rank: 0, 
             },
-          })
+        })
 
         res.status(200).json({
             message: "Quiz submitted successfully",
@@ -129,13 +130,6 @@ const getLeaderboard = async (req, res) => {
 
         const room = await prisma.activeRoom.findUnique({
             where: { roomCode },
-            include: {
-                leaderboard: {
-                    include: {
-                        student: true
-                    }
-                }
-            }
         })
 
         if (!room) {
@@ -144,7 +138,14 @@ const getLeaderboard = async (req, res) => {
             })
         }
 
-        const leaderboard = room.leaderboard
+        const leaderboardEntries = await prisma.leaderbaord.findMany({
+            where: { roomName: room.roomName },
+            include: {
+                student: true
+            }
+        })
+
+        const leaderboard = leaderboardEntries
             .sort((a, b) => b.score - a.score)
             .map((entry, index) => {
                 return {
