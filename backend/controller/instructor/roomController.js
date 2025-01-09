@@ -206,6 +206,7 @@ const getPastRooms = async (req, res) => {
                 : "NA"
 
             return {
+                id: room.id,
                 roomName: room.roomName,
                 totalQuestions,
                 attemptedQuestions,

@@ -37,7 +37,7 @@ const PastRooms = () => {
         <div className="flex flex-wrap gap-4">
           {pastQuizzes.map((quiz, index) => (
             <PastRoomCard
-              key={quiz.id || `${quiz.name}-${index}`} // Fallback key
+              key={quiz.id || `${quiz.roomName}-${index}`} 
               quiz={quiz}
             />
           ))}
