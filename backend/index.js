@@ -19,10 +19,27 @@ require('dotenv').config({
 
 const app = express()
 
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://192.168.29.7:3000',
+    'https://quizbee.tech',
+    'https://www.quizbee.tech',
+    'https://api.quizbee.tech'
+]
+
 app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }))
+
 app.use(bodyParser.json())
 app.use(cookie())
 
