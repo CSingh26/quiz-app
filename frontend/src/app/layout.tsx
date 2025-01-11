@@ -53,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <Head>
         <meta name="description" content="Quizing made easy for Genz" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
       <body>{children}</body>
     </html>
