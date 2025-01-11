@@ -1,4 +1,4 @@
-# Quiz Application
+# Quiz Application - Frontend
 
 This is a comprehensive Quiz Application that allows instructors and students to manage quizzes seamlessly. 
 The app includes various features such as creating and managing rooms, viewing leaderboards, uploading test modules, and more.
