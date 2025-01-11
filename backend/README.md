@@ -57,21 +57,21 @@ The app includes various features such as creating and managing rooms, viewing l
 3. Set up environment variables: Create a .env.local file in the root directory and add the following:
     ```bash
     JWT_KEY = <Your JWT Secret Key>
-APP_KEY = <App Secret Key>
-PORT = 6573
-MONGO_USERNAME = <MongoDB Username>
-MONGO_PWD = <MongoDB Password>
-MONGO_URL = <MongoDB Connection URL>
-ADMIN_USERNAME = <Admin Username>
-ADMIN_PWD = <Admin Password>
-NODE_ENV = production
-DATABASE_URL = <MongoDB Full Connection URL>
-AWS_ACCESS_KEY = <AWS Access Key>
-AWS_SECRET_ACCESS_KEY = <AWS Secret Access Key>
-AWS_REGION_NAME = <AWS Region>
-AWS_BUCKET_NAME = <AWS S3 Bucket Name>
-DEFAULT_AVATAR_URL = <URL for Default Avatar>
-DEFAULT_BACKGROUND_URL = <URL for Default Background>
+    APP_KEY = <App Secret Key>
+    PORT = 6573
+    MONGO_USERNAME = <MongoDB Username>
+    MONGO_PWD = <MongoDB Password>
+    MONGO_URL = <MongoDB Connection URL>
+    ADMIN_USERNAME = <Admin Username>
+    ADMIN_PWD = <Admin Password>
+    NODE_ENV = production
+    DATABASE_URL = <MongoDB Full Connection URL>
+    AWS_ACCESS_KEY = <AWS Access Key>
+    AWS_SECRET_ACCESS_KEY = <AWS Secret Access Key>
+    AWS_REGION_NAME = <AWS Region>
+    AWS_BUCKET_NAME = <AWS S3 Bucket Name>
+    DEFAULT_AVATAR_URL = <URL for Default Avatar>
+    DEFAULT_BACKGROUND_URL = <URL for Default Background>
     ```
 4. Generate Primsa Client
     ```bash
