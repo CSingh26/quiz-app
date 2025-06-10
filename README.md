@@ -1,4 +1,4 @@
-# Quiz Application
+# Quiz Room Application
 
 This is a comprehensive Quiz Application designed to provide seamless quiz management for instructors and students. The app features room creation, leaderboards, test module uploads, and much more.
 
