@@ -1,0 +1,38 @@
+name: Quality
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:3876/api/
+      DATABASE_URL: mongodb://127.0.0.1:27028/quizbee_portfolio_test?replicaSet=rs0&directConnection=true
+      QUIZBEE_TEST_DATABASE_URL: mongodb://127.0.0.1:27028/quizbee_portfolio_test?replicaSet=rs0&directConnection=true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci --prefix backend && npm ci --prefix frontend
+      - run: npm run build --prefix backend
+      - run: npm run lint --prefix backend && npm run lint --prefix frontend && npm run typecheck --prefix frontend
+      - run: npm run test --prefix backend
+      - name: Start isolated MongoDB replica set
+        run: |
+          docker run --rm -d --name quizbee-portfolio-ci -p 127.0.0.1:27028:27017 mongo:7.0@sha256:b6421fd6d1c5ded6377b397d8983e2f82e2100dc5123332dcfda2065a472be5b --replSet rs0 --bind_ip_all
+          for i in $(seq 1 30); do
+            if docker exec quizbee-portfolio-ci mongosh --quiet --eval 'db.adminCommand({ping:1})' >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          docker exec quizbee-portfolio-ci mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27017"}]})'
+      - run: backend/node_modules/.bin/prisma db push --schema backend/prisma/schema.prisma
+      - run: npm run test:integration --prefix backend
+      - run: npm run build --prefix frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e --prefix frontend
+      - run: npm audit --omit=dev --prefix backend && npm audit --omit=dev --prefix frontend
+      - run: python3 scripts/check_secrets.py

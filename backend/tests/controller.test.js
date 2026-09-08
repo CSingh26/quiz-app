@@ -7,6 +7,7 @@ function fixture(){
  const question={id:'q1',correct:'A',options:[{text:'A'},{text:'B'}]};
  const room={roomName:'room',testModuleId:'module',startTime:new Date(Date.now()-10000),endTime:new Date(Date.now()+10000)};
  const prisma={activeRoom:{findUnique:async()=>room},student:{findUnique:async()=>({id:'student'})},question:{findMany:async query=>{assert.equal(query.where.testModuleId,'module');return [question];}},quizAttempt:{create:async data=>writes.push(data)},leaderbaord:{upsert:async data=>writes.push(data)}};
+ prisma.$transaction = async work => work(prisma);
  return {api:createQuizController(prisma),writes,room};
 }
 test('out-of-module answers are rejected before either database write',async()=>{

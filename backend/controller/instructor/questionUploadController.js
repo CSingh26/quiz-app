@@ -108,16 +108,25 @@ const deleteTestModule = async (req, res) => {
             })
         }
 
-        await prisma.option.deleteMany({
+        await prisma.$transaction(async (tx) => {
+            const linked = await Promise.all([
+                tx.activeRoom.count({ where: { testModuleId: moduleId } }),
+                tx.scheduledRoom.count({ where: { testModuleId: moduleId } }),
+                tx.pastRoom.count({ where: { testModuleId: moduleId } }),
+            ])
+            if (linked.some(count => count > 0)) throw new QuizInputError("Module is used by quiz rooms and cannot be deleted")
+        await tx.option.deleteMany({
             where: { question: { testModuleId: moduleId } },
         })
 
-        await prisma.question.deleteMany({
+        await tx.question.deleteMany({
             where: { testModuleId: moduleId },
         })
 
-        await prisma.testModule.delete({
+        await tx.testModule.delete({
             where: { id: moduleId },
+        })
+
         })
 
         res.status(200).json({

@@ -88,7 +88,9 @@ const submitQuiz = async (req, res) => {
         })
         const score = gradeAnswers(answers, questions)
 
-        await prisma.quizAttempt.create({
+        // An attempt and its leaderboard score must succeed or roll back together.
+        await prisma.$transaction(async (tx) => {
+        await tx.quizAttempt.create({
             data: {
                 studentId: studentID,
                 roomName: room.roomName,
@@ -98,7 +100,7 @@ const submitQuiz = async (req, res) => {
             },
         })
 
-        await prisma.leaderbaord.upsert({
+        await tx.leaderbaord.upsert({
             where: {
                 studentId_roomName: {
                     studentId: studentID,
@@ -112,6 +114,8 @@ const submitQuiz = async (req, res) => {
                 score,
                 rank: 0, 
             },
+        })
+
         })
 
         res.status(200).json({

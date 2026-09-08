@@ -1,70 +1,64 @@
-# Quiz Room Application
+# QuizBee
 
-This is a comprehensive Quiz Application designed to provide seamless quiz management for instructors and students. The app features room creation, leaderboards, test module uploads, and much more.
+A quiz platform for studying how reliable software preserves the meaning of an assessment—from a teacher's question file to a student's recorded score.
 
----
+## The engineering question
 
-## Features
-### For Instructors:
-- **Room Management**: Create, activate, and manage quiz rooms.
-- **Leaderboard**: View the leaderboard for each quiz.
-- **Test Module Management**: Upload test modules and manage existing ones.
-### For Students:
-- **Attempt Quizzes**: Join active quiz rooms and attempt quizzes.
-- **Leaderboard Access**: Check their position on the leaderboard for completed quizzes.
+Can a system keep quiz content, room timing, authorization and grading consistent when requests are malformed, repeated or late?
 
----
+QuizBee keeps its original identity as a computer-science project. Instructors import question modules and schedule rooms; students answer questions and inspect ranked results. The useful engineering work is in the boundaries: a score must come from the assigned module, an expired room must reject submissions even before the cleanup job runs, and a failed database write must not leave a contradictory leaderboard.
 
-## Technologies Used
-### Backend:
-- **Node.js & Express.js**: Used for building a scalable and efficient server.
-- **Prisma ORM**: For database schema definition and seamless interaction with MongoDB.
-- **MongoDB**: The primary database for storing application data, including user details, quizzes, and results.
-- **AWS SDK**: Utilized for S3 bucket integration to handle file uploads and storage.
-- **JWT Authentication**: Securely managing user sessions via JSON Web Tokens.
-- **Bcrypt**: Ensuring secure password hashing for user data.
-- **Node-Cron**: Scheduling tasks like leaderboard updates or room deactivations.
-### Frontend:
-- **React & Next.js**: For dynamic and interactive UI, ensuring a smooth user experience.
-- **TailwindCSS**: Enables responsive and modern styling for all pages.
-- **React-Toastify**: Used for notifications and user feedback.
+## What the system enforces
 
+- Instructor-only module import/deletion and room creation/activation, with authorization before upload parsing.
+- Complete JSON question validation before one atomic nested module write; malformed later questions cannot leave a partial module.
+- Server-side grading against the room's module and legitimate option text. Omitted questions score zero; invented question IDs and options are rejected.
+- Request-time start/end checks independent of the minute-based scheduler.
+- Atomic attempt/leaderboard persistence. Linked modules cannot be deleted; unlinked question/options/module deletion is transactional.
+- HttpOnly session cookies with HTTPS in production and usable local development behavior. Uploads are capped at 5 MB.
 
----
-## Processes and Workflow
-### Room and Quiz Management:
-- Instructors can create rooms using the backend's API.
-- Rooms are dynamically activated or deactivated based on their scheduled times.
-- Test modules can be uploaded and assigned to specific rooms for quizzes.
-### File Uploads:
-- Files, such as test modules, are uploaded directly to an AWS S3 bucket and MongoDB using multer and multer-s3.
-### Database Management:
-- Prisma ORM handles data interaction and schema definitions.
-- MongoDB stores all data, including quiz details, user profiles, and room information.
-### Authentication and Security:
-- JWTs are used for user authentication, ensuring secure access for instructors and students.
-- Passwords are securely hashed using Bcrypt for enhanced data security.
-### AWS Services:
-- **S3 Bucket**: Stores test module files and user-uploaded data.
-- **EC2**: Hosts the backend server.
-- **Elastic Load Balancer**: Balances incoming traffic to ensure high availability.
-- **Route 53**: Manages domain routing.
-- **ACM (AWS Certificate Manager)**: Provides SSL for secure communication.
-- **Elastic IP**: Static IP for consistent backend access.
-### Frontend Hosting:
-- **Vercel**: Used for hosting the frontend, enabling continuous integration and deployment for seamless updates.
-### Domain Management:
-- **Hostinger**: Manages the domain name and related services for the application.
----
-### Development Notes
-- Modular architecture ensures easy scalability and maintainability.
-- Comprehensive error handling is implemented for better debugging and user experience.
-- Task scheduling is handled using node-cron, automating periodic updates and maintenance tasks.
----
-### License
-- This project is licensed under the MIT License.
----
-### Acknowledgments
-- **Libraries Used**: Prisma, Mongoose, AWS SDK, bcrypt, jsonwebtoken, multer, node-cron, React-Toastify, TailwindCSS.
-- **Services Utilized**: AWS (S3, EC2, ACM, Route 53), Vercel, Hostinger.
-- **Contributors**: Chaitanya Singh
+Repeated attempts retain the existing policy: each attempt is stored and the latest score updates the leaderboard. This is documented behavior, not an exam-integrity guarantee.
+
+![Quiz workflow with an explicitly labeled test fixture](docs/screenshots/quiz-fixture.png)
+
+## Architecture
+
+Next.js interface → Express routes and role gates → pure validation/grading domain → Prisma → MongoDB replica set. S3 is optional for profile images. A scheduled job moves rooms between scheduled, active and past states; request-time validation remains authoritative for submission acceptance.
+
+[Architecture](docs/ARCHITECTURE.md) · [Methodology and invariants](docs/METHODOLOGY.md) · [Limitations](docs/LIMITATIONS.md)
+
+## Run locally
+
+Use Node 22 or 24 and a MongoDB replica set. Copy each `.env.example` to `.env` in the same directory, fill the local settings and keep those files untracked. Generate an instructor bcrypt password hash locally with `bcryptjs`; `ADMIN_PWD` stores the hash. Frontend and API should share a site in production.
+
+```sh
+npm ci --prefix backend
+npm ci --prefix frontend
+cd backend
+npm run build
+npx prisma db push
+npm run dev
+```
+
+In a second terminal, run `npm run dev --prefix frontend`. Open `http://localhost:3000`. The API defaults to port 3876. Frontend API configuration is embedded at build time and requires its trailing slash.
+
+For a disposable local MongoDB replica set, run the documented [integration setup](docs/TESTING.md). S3 credentials are necessary only for image upload; no credentials are bundled.
+
+## Verification
+
+```sh
+npm run test --prefix backend
+npm run lint --prefix backend
+npm run lint --prefix frontend
+npm run typecheck --prefix frontend
+npm run build --prefix frontend
+npm run test:e2e --prefix frontend
+```
+
+Twelve domain/controller/authorization/session tests, one real MongoDB persistence test and four desktop/mobile browser tests cover this delivery. The database test verifies rollback after an injected leaderboard failure and protects linked module content. Browser fixtures are explicitly synthetic; no real student records or provider uploads are used.
+
+CI installs locked dependencies, generates Prisma, lints, typechecks, tests against MongoDB, builds, runs browser journeys, audits production dependencies and scans tracked text for common secret patterns. See [testing](docs/TESTING.md) and the [delivery report](docs/PORTFOLIO_DELIVERY.md) for exact evidence.
+
+## Further engineering work
+
+Assessment-attempt policy, distributed room scheduling, production rate limits, audit logs, accessibility and multiple instructor organizations are worthwhile extensions. This release does not claim proctoring, anti-cheating guarantees or production load validation.

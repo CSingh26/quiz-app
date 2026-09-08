@@ -1,20 +1,11 @@
-const { PrismaClient} = require("@prisma/client")
+const { PrismaClient } = require('@prisma/client');
+require('dotenv').config();
+const prisma = new PrismaClient();
 
-require('dotenv').config({
-}) //configure your env and enter approraite path
-
-const prisma = new PrismaClient()
-
+// Readiness follows a completed connection; a pending promise is not a healthy DB.
 const connectDB = async () => {
-    try {
-        const conn = prisma.$connect()
-        console.log('MongoDB connected through Prisma')
-
-        return { conn }
-    } catch (err) {
-        console.error(err.message)
-        process.exit(1)
-    }
-}
-
-module.exports = connectDB
+    await prisma.$connect();
+    console.log('MongoDB connected through Prisma');
+    return prisma;
+};
+module.exports = connectDB;
