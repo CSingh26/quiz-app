@@ -19,3 +19,15 @@ test('instructor local login sets a usable HttpOnly cookie and logout clears sam
   assert.equal(cookies[1].options.sameSite, cookies[0].options.sameSite);
   assert.equal(cookies[1].options.maxAge, 0);
 });
+
+test('missing instructor configuration and malformed login return controlled errors', async () => {
+  process.env.ADMIN_USERNAME = 'configured-instructor';
+  delete process.env.ADMIN_PWD;
+  const response = () => ({code: 200,status(code){this.code=code;return this;},json(){}});
+  const absent=response();
+  await auth.login({body:{username:'configured-instructor',password:'input'}},absent);
+  assert.equal(absent.code,503);
+  const invalid=response();
+  await auth.login({body:{username:[],password:{}}},invalid);
+  assert.equal(invalid.code,400);
+});

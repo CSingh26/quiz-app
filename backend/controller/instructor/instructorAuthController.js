@@ -7,7 +7,15 @@ require('dotenv').config({
 
 //login
 const login = async (req, res) => {
-    const { username, password } = req.body
+    const { username, password } = req.body || {}
+    if (typeof username !== "string" || !username.trim() || username.length > 100
+        || typeof password !== "string" || !password || password.length > 1024) {
+        return res.status(400).json({ message: "Valid username and password are required" })
+    }
+    if (!process.env.ADMIN_USERNAME || !process.env.JWT_KEY
+        || !/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(process.env.ADMIN_PWD || "")) {
+        return res.status(503).json({ message: "Instructor authentication is not configured" })
+    }
     
     if (username !== process.env.ADMIN_USERNAME) {
         return res.status(401).json({
