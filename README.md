@@ -55,7 +55,7 @@ npm run build --prefix frontend
 npm run test:e2e --prefix frontend
 ```
 
-Twelve domain/controller/authorization/session tests, one real MongoDB persistence test and four desktop/mobile browser tests cover this delivery. The database test verifies rollback after an injected leaderboard failure and protects linked module content. Browser fixtures are explicitly synthetic; no real student records or provider uploads are used.
+Fifteen domain/controller/authorization/session tests, one real MongoDB persistence test and four desktop/mobile browser tests cover this delivery. The database test verifies rollback after an injected leaderboard failure and protects linked module content. Browser fixtures are explicitly synthetic; no real student records or provider uploads are used.
 
 CI installs locked dependencies, generates Prisma, lints, typechecks, tests against MongoDB, builds, runs browser journeys, audits production dependencies and scans tracked text for common secret patterns. See [testing](docs/TESTING.md) and the [delivery report](docs/PORTFOLIO_DELIVERY.md) for exact evidence.
 

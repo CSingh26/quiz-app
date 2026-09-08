@@ -1,18 +1,28 @@
 const { PrismaClient } = require("@prisma/client")
 const moment = require("moment-timezone")
+const { QuizInputError } = require("../../domain/quiz")
 
-const prisma = new PrismaClient()
+function createRoomController(prisma) {
 
 const convertToUTC = (date, time, timezone = "Asia/Kolkata") => {
-    return moment.tz(`${date}T${time}`, timezone).utc().toDate()
+    return moment.tz(`${date}T${time}`, "YYYY-MM-DDTHH:mm", true, timezone).utc().toDate()
 }
 
 const createRoom = async (req, res) => {
     try {
-        const { roomName, roomCode, testModule, startDate, startTime, endTime } = req.body
+        const { roomName, roomCode, testModule, startDate, startTime, endTime } = req.body || {}
 
-        if (!roomName || !roomCode || !testModule || !startDate || !startTime || !endTime) {
-            return res.status(400).json({ message: "All fields are required" })
+        if ([roomName, roomCode].some(value => typeof value !== "string" || !value.trim() || value.length > 100)
+            || typeof testModule !== "string" || !/^[a-f0-9]{24}$/i.test(testModule)
+            || typeof startDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)
+            || [startTime, endTime].some(value => typeof value !== "string" || !/^\d{2}:\d{2}$/.test(value))) {
+            throw new QuizInputError("Provide bounded room names, a module identifier and valid date/time fields")
+        }
+        const parsedStartTime = convertToUTC(startDate, startTime)
+        const parsedEndTime = convertToUTC(startDate, endTime)
+        if (!Number.isFinite(parsedStartTime.getTime()) || !Number.isFinite(parsedEndTime.getTime())
+            || parsedStartTime >= parsedEndTime || parsedEndTime <= new Date()) {
+            throw new QuizInputError("Require valid same-day times with start before end and end in the future")
         }
 
         const existingRoom = await prisma.$transaction([
@@ -24,9 +34,6 @@ const createRoom = async (req, res) => {
         if (existingRoom.some((room) => room !== null)) {
             return res.status(400).json({ message: "Room code already exists. Please choose a different code." })
         }
-
-        const parsedStartTime = convertToUTC(startDate, startTime)
-        const parsedEndTime = convertToUTC(startDate, endTime)
 
         const roomData = {
             roomName,
@@ -44,6 +51,7 @@ const createRoom = async (req, res) => {
             return res.status(201).json({ message: "Room created successfully", roomCode: activeRoom.roomCode })
         }
     } catch (err) {
+        if (err instanceof QuizInputError) return res.status(400).json({ message: err.message })
         console.error("Error creating room:", err)
         return res.status(500).json({ message: "Internal Server Error" })
     }
@@ -263,22 +271,22 @@ const activateScheuledRoomNow = async (req, res) => {
             return res.status(404).json({ message: "Room not found" })
         }
 
-        const newActiveRoom = await prisma.activeRoom.create({
-            data: {
-                roomName: room.roomName,
-                roomCode: room.roomCode,
-                testModuleId: room.testModuleId,
-                startTime: room.startTime,
-                endTime: room.endTime,
-            },
-        })
-
-        await prisma.scheduledRoom.delete({
-            where: { id: roomId },
+        const activatedAt = new Date()
+        if (!Number.isFinite(new Date(room.endTime).getTime()) || new Date(room.endTime) <= activatedAt) {
+            throw new QuizInputError("Expired rooms cannot be activated")
+        }
+        const newActiveRoom = await prisma.$transaction(async (tx) => {
+            const active = await tx.activeRoom.create({
+                data: { roomName: room.roomName, roomCode: room.roomCode,
+                    testModuleId: room.testModuleId, startTime: activatedAt, endTime: room.endTime },
+            })
+            await tx.scheduledRoom.delete({ where: { id: roomId } })
+            return active
         })
 
         res.status(200).json({ message: "Room activated successfully", activeRoom: newActiveRoom })
     } catch (err) {
+        if (err instanceof QuizInputError) return res.status(400).json({ message: err.message })
         console.error("Error activating scheduled room:", err)
         res.status(500).json({ message: "Internal Server Error" })
     }
@@ -325,7 +333,7 @@ const getPastRoomForInstructors = async (req, res) => {
     }
 }
 
-module.exports = {
+return {
     createRoom,
     transferExpiredRooms,
     activateScheuledRooms,
@@ -336,3 +344,5 @@ module.exports = {
     activateScheuledRoomNow,
     getPastRoomForInstructors,
 }
+}
+module.exports = { ...createRoomController(new PrismaClient()), createRoomController }
