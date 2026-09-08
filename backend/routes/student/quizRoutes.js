@@ -9,7 +9,7 @@ router.get("/:roomCode/get-questions",
 )
 
 router.post("/submit-quiz", 
-    authMiddlerware, 
+    authMiddlerware, authMiddlerware.requireRole("student"), 
     quizController.submitQuiz
 )
 

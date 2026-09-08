@@ -5,9 +5,6 @@ const { v4: uuidv4 } = require("uuid")
 require('dotenv').config({
 })
 
-console.log("Bucket Name:", process.env.AWS_BUCKET_NAME);
-console.log("Region:", process.env.AWS_REGION_NAME);
-console.log("Access Key:", process.env.AWS_ACCESS_KEY)
 
 const s3Client = new S3Client({
     region: process.env.AWS_REGION_NAME,
@@ -20,7 +17,8 @@ const s3Client = new S3Client({
 const s3Storage = multer.memoryStorage()
 
 const upload = multer({
-    storage: s3Storage
+    storage: s3Storage,
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 }
 })
 
 const uploadToS3 = async (file, folder) => {

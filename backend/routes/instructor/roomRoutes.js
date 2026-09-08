@@ -2,10 +2,13 @@ const express = require("express")
 const roomController = require("../../controller/instructor/roomController")
 const authenticationToken = require("../../middleware/authMiddleware")
 
+const { requireRole } = authenticationToken
+
 const router = express.Router()
 
 router.post(
-    "/create-room", 
+    "/create-room",
+    authenticationToken, requireRole("instructor"), 
     roomController.createRoom
 )
 
@@ -27,6 +30,7 @@ router.post(
 
 router.post(
     "/activate-room/:roomId",
+    authenticationToken, requireRole("instructor"),
     roomController.activateScheuledRoomNow
 )
 

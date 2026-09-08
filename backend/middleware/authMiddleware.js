@@ -4,9 +4,8 @@ require('dotenv').config({
 }) //configure your env and enter approraite path
 
 const authMiddleware = (req, res, next) => {
-  const token = req.cookies.token
+  const token = req.cookies?.token
   if (!token) {
-    console.log("No token found in cookies")
     return res.status(403).json({
       message: "Unauthorized"
     })
@@ -24,3 +23,8 @@ const authMiddleware = (req, res, next) => {
 }
 
 module.exports = authMiddleware
+
+module.exports.requireRole = (role) => (req, res, next) => {
+  if (req.user?.role !== role) return res.status(403).json({ message: "Forbidden" });
+  next();
+};

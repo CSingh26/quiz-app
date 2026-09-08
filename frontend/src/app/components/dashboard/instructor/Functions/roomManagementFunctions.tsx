@@ -66,6 +66,7 @@ export const createRoom = async (
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/create-room`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },

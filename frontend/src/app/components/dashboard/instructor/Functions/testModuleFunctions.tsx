@@ -42,6 +42,7 @@ export const uploadModule = async (
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}tests/upload-test`, {
       method: "POST",
+      credentials: "include",
       body: formData,
     })
     if (response.ok) {
@@ -66,6 +67,7 @@ export const deleteModule = async (
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}tests/delete-module/${id}`, {
       method: "DELETE",
+      credentials: "include",
     })
     if (response.ok) {
       toast.success("Module deleted successfully!", { position: "top-center" })
