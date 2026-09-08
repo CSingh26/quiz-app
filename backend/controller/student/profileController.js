@@ -1,6 +1,5 @@
 const { PrismaClient } = require("@prisma/client")
 const { upload, uploadToS3 } = require("../../middleware/upload")
-const e = require("express")
 
 const prisma = new PrismaClient()
 

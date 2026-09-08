@@ -4,7 +4,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "test": "node --test tests/*.test.js",
+    "lint": "eslint . --ext .js",
+    "build": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -12,10 +15,7 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.713.0",
-    "@aws-sdk/lib-storage": "^3.713.0",
-    "@aws-sdk/s3-request-presigner": "^3.713.0",
     "@prisma/client": "^6.0.0",
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
@@ -24,14 +24,16 @@
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.46",
-    "mongoose": "^8.8.3",
-    "multer": "^1.4.5-lts.1",
-    "multer-s3": "^3.0.1",
-    "node-cron": "^3.0.3",
+    "multer": "2.3.0",
+    "node-cron": "4.6.0",
     "uuid": "^11.0.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.7",
-    "prisma": "^6.0.0"
+    "prisma": "^6.0.0",
+    "eslint": "8.57.1"
+  },
+  "overrides": {
+    "qs": "6.16.0"
   }
 }

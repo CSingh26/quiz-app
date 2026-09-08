@@ -1,10 +1,11 @@
+import type { Question, Router } from "@/types/quiz";
 import { toast } from "react-toastify"
 
 export const fetchQuestions = async (
   roomName: string,
-  setQuestions: React.Dispatch<React.SetStateAction<any[]>>,
+  setQuestions: React.Dispatch<React.SetStateAction<Question[]>>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  router: any
+  router: Router
 ) => {
   try {
     const response = await fetch(
@@ -14,7 +15,7 @@ export const fetchQuestions = async (
 
     if (response.ok) {
       setQuestions(
-        data.questions.map((q: any) => ({
+        data.questions.map((q: Question) => ({
           ...q,
           options: q.options.sort(() => Math.random() - 0.5),
         }))
@@ -38,7 +39,7 @@ export const fetchQuestions = async (
 export const submitQuiz = async (
   roomCode: string,
   answers: Record<string, string>,
-  router: any
+  router: Router
 ) => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}quiz/submit-quiz`, {

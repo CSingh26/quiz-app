@@ -1,3 +1,4 @@
+const sessionCookie = require("../../middleware/sessionCookie")
 const enc = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
@@ -28,13 +29,7 @@ const login = async (req, res) => {
         expiresIn: '1h'
     })
 
-    res.cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        maxAge: 3600000,
-        path: "/",
-        sameSite: "None"
-    })
+    res.cookie("token", token, { ...sessionCookie(), maxAge: 3600000 })
 
     res.status(200).json({
         message: "Login Successfull",
@@ -42,12 +37,7 @@ const login = async (req, res) => {
 }
 
 const logout = (req, res) => {
-    res.cookie("token", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 0,
-        path: "/"
-    })
+    res.cookie("token", "", { ...sessionCookie(), maxAge: 0 })
 
     res.status(200).json({
         message: "Logout Successfull"

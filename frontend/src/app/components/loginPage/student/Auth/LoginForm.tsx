@@ -68,7 +68,7 @@ export default function LoginForm({ handleLogin}: LoginFormProps) {
             <p
                 className="mt-6 text-center text-gray-600 text-xl"
             >
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/register" className="text-[#00004d] underline">
                     Register Here
                 </Link>

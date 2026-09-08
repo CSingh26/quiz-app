@@ -1,8 +1,9 @@
+import type { Toast, Router } from "@/types/quiz";
 import { PastQuiz } from "../pastRoomsPage/roomInterface"
 
 export const fetchPastRooms = async (
     setPastQuizzes: React.Dispatch<React.SetStateAction<PastQuiz[]>>,
-    toast: any
+    toast: Toast
   ) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/get-past-rooms`, {
@@ -29,9 +30,8 @@ export const fetchPastRooms = async (
     }
 }
 
-import { useRouter } from "next/navigation"
 
-export const checkAuth = async (toast: any, router: any) => {
+export const checkAuth = async (toast: Toast, router: Router) => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/student/check`, {
       credentials: "include",

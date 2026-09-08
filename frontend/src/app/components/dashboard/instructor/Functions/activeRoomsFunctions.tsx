@@ -58,7 +58,8 @@ export const activateRoom = async (
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}room/activate-room/${roomId}`, { 
-        method: "POST" 
+        method: "POST",
+        credentials: "include" 
       }
     )
 

@@ -3,7 +3,7 @@ import React from "react"
 interface Question {
   id: string
   text: string
-  options: { label: string; text: string; id: string }[]
+  options: { label?: string; text: string; id: string }[]
 }
 
 interface QuestionDisplayProps {

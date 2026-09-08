@@ -1,6 +1,6 @@
-import { useRouter } from "next/navigation"
+import type { Toast, Router, StudentProfile } from "@/types/quiz";
 
-export const checkAuth = async (toast: any, router: any) => {
+export const checkAuth = async (toast: Toast, router: Router) => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/student/check`, {
       credentials: "include",
@@ -21,7 +21,7 @@ export const checkAuth = async (toast: any, router: any) => {
   }
 }
 
-export const fetchProfile = async (setProfile: (profile: any) => void, toast: any) => {
+export const fetchProfile = async (setProfile: (profile: StudentProfile) => void, toast: Toast) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}student/profile/get-profile`,
@@ -52,7 +52,7 @@ export const updateProfile = async (
     formData: FormData,
     setIsEditing: (isEditing: boolean) => void,
     fetchProfile: () => Promise<void>,
-    toast: any
+    toast: Toast
   ) => {
     try {
       const res = await fetch(

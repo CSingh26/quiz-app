@@ -1,3 +1,4 @@
+import type { ProfileForm } from "@/types/quiz";
 import { Button } from "@/components/ui/button"
 
 const EditProfileForm = ({
@@ -6,14 +7,14 @@ const EditProfileForm = ({
   onCancel,
   onSave,
 }: {
-  formData: any
-  setFormData: (data: any) => void
+  formData: ProfileForm
+  setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>
   onCancel: () => void
   onSave: () => void
 }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }))
@@ -21,7 +22,7 @@ const EditProfileForm = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: files ? files[0] : null,
     }))

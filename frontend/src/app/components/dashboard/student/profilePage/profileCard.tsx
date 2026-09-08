@@ -1,3 +1,4 @@
+import type { StudentProfile } from "@/types/quiz";
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
@@ -5,7 +6,7 @@ const ProfileCard = ({
   profile,
   onEditClick,
 }: {
-  profile: any
+  profile: StudentProfile | null
   onEditClick: () => void
 }) => {
   return (
@@ -34,13 +35,13 @@ const ProfileCard = ({
       <div className="flex-1 bg-[#3c6ca8] flex flex-col justify-start pt-32 px-8 text-white">
         <div className="text-lg mb-8">
           <p className="mb-4">
-            <strong>USERNAME: </strong> {profile?.username || "Placeholder"}
+            <strong>USERNAME: </strong> {profile?.username || "Unavailable"}
           </p>
           <p className="mb-4">
-            <strong>NAME: </strong> {profile?.name || "Placeholder"}
+            <strong>NAME: </strong> {profile?.name || "Unavailable"}
           </p>
           <p className="mb-4">
-            <strong>EMAIL: </strong> {profile?.email || "Placeholder"}
+            <strong>EMAIL: </strong> {profile?.email || "Unavailable"}
           </p>
         </div>
       </div>

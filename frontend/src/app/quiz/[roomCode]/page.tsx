@@ -1,4 +1,5 @@
 "use client"
+import type { Question } from "@/types/quiz";
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -15,7 +16,7 @@ export default function QuizPage() {
   const { roomCode } = useParams() as { roomCode: string }
   const router = useRouter()
 
-  const [questions, setQuestions] = useState<any[]>([])
+  const [questions, setQuestions] = useState<Question[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)

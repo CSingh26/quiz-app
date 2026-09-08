@@ -1,4 +1,5 @@
 "use client"
+import type { StudentProfile, ProfileForm } from "@/types/quiz";
 
 import React, { useState, useEffect } from "react"
 import { ToastContainer, toast } from "react-toastify"
@@ -13,9 +14,9 @@ import ProfileCard from "../../../components/dashboard/student/profilePage/profi
 import EditProfileForm from "../../../components/dashboard/student/profilePage/editProfileForm"
 
 const Profile = () => {
-  const [profile, setProfile] = useState<any>(null)
+  const [profile, setProfile] = useState<StudentProfile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileForm>({
     name: "",
     username: "",
     email: "",

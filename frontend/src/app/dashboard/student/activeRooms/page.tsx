@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import RoomCard from "../../../components/dashboard/student/activeRoomsPage/roomCard"
 import NoActiveRooms from "../../../components/dashboard/student/activeRoomsPage/noActiveRooms"
 import { 
-    checkAuth, 
     fetchActiveRooms, 
     verifyRoomCode 
 } from "../../../components/dashboard/student/Functions/activeRoomsFunctions"
@@ -35,7 +34,7 @@ const ActiveRoomPage = () => {
         <NoActiveRooms />
       ) : (
         <div className="flex flex-wrap gap-2">
-          {rooms.map((room: any) => (
+          {rooms.map((room) => (
             <RoomCard
               key={room.id}
               {...room}

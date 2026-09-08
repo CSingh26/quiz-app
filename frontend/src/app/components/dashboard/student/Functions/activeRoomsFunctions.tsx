@@ -1,8 +1,9 @@
+import type { Toast, Router } from "@/types/quiz";
 import { Room } from "../activeRoomsPage/roomInterface"
 
 export const fetchActiveRooms = async (
     setRooms: React.Dispatch<React.SetStateAction<Room[]>>, 
-    toast: any) => {
+    toast: Toast) => {
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/get-active-rooms`, {
             credentials: "include"
@@ -30,8 +31,8 @@ export const fetchActiveRooms = async (
 export const verifyRoomCode = async (
     roomId: string,
     roomCode: string,
-    toast: any,
-    router: any
+    toast: Toast,
+    router: Router
 ) => {
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}room/verify-room-code`, {
@@ -64,7 +65,7 @@ export const verifyRoomCode = async (
     }
 }
 
-export const checkAuth = async (toast: any, router: any) => {
+export const checkAuth = async (toast: Toast, router: Router) => {
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/student/check`, {
             credentials: "include"

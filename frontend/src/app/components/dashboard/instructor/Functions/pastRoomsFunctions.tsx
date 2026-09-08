@@ -1,3 +1,4 @@
+import type { PastRoomSummary } from "@/types/quiz";
 import { Room } from "../pastRoomsPage/roomInterface"
 import { toast } from "react-toastify"
 
@@ -10,7 +11,7 @@ export const fetchPastRooms = async (
 
     if (response.ok) {
       const data = await response.json()
-      const formattedRooms = data.pastRooms.map((room: any) => ({
+      const formattedRooms = data.pastRooms.map((room: PastRoomSummary) => ({
         name: room.roomName,
         moduleName: room.moduleName,
         maxScore: room.maxScore,
