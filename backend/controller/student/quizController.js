@@ -1,6 +1,8 @@
 const { PrismaClient } = require("@prisma/client")
 
-const prisma = new PrismaClient()
+const { gradeAnswers, requireOpenRoom, QuizInputError } = require("../../domain/quiz")
+
+function createQuizController(prisma) {
 
 const getQuizQuestions = async (req, res) => {
     try {
@@ -27,6 +29,7 @@ const getQuizQuestions = async (req, res) => {
             })
         }
 
+        requireOpenRoom(room)
         const questions = room.testModule.questions.map(question => {
             const shuffledOptions = question.options.sort(() => Math.random() - 0.5)
             return {
@@ -44,6 +47,7 @@ const getQuizQuestions = async (req, res) => {
             questions
         })
     } catch (err) {
+        if (err instanceof QuizInputError) return res.status(400).json({ message: err.message })
         console.error("Error fetching quiz questions", err)
         res.status(500).json({
             message: "Internal Server Error"
@@ -53,7 +57,10 @@ const getQuizQuestions = async (req, res) => {
 
 const submitQuiz = async (req, res) => {
     try {
-        const { answers, roomCode } = req.body
+        const { answers, roomCode } = req.body || {}
+        if (typeof roomCode !== "string" || !roomCode.trim() || roomCode.length > 100) {
+            throw new QuizInputError("A valid room code is required")
+        }
 
         const room = await prisma.activeRoom.findUnique({
             where: { roomCode },
@@ -64,6 +71,7 @@ const submitQuiz = async (req, res) => {
             })
         }
 
+        requireOpenRoom(room)
         const studentID = req.user.id
         const student = await prisma.student.findUnique({
             where: { id: studentID },
@@ -74,17 +82,11 @@ const submitQuiz = async (req, res) => {
             })
         }
 
-        let score = 0
-        for (const [questionId, selectedOption] of Object.entries(answers)) {
-            const question = await prisma.question.findUnique({
-                where: { id: questionId },
-                include: { options: true },
-            })
-
-            if (question && question.correct === selectedOption) {
-                score += 1 
-            }
-        }
+        const questions = await prisma.question.findMany({
+            where: { testModuleId: room.testModuleId },
+            include: { options: true },
+        })
+        const score = gradeAnswers(answers, questions)
 
         await prisma.quizAttempt.create({
             data: {
@@ -117,6 +119,7 @@ const submitQuiz = async (req, res) => {
             score,
         })
     } catch (err) {
+        if (err instanceof QuizInputError) return res.status(400).json({ message: err.message })
         console.error("Error submitting quiz:", err)
         res.status(500).json({
             message: "Internal Server Error",
@@ -157,6 +160,7 @@ const getLeaderboard = async (req, res) => {
 
         res.status(200).json({ leaderboard })
     } catch (err) {
+        if (err instanceof QuizInputError) return res.status(400).json({ message: err.message })
         console.error("Error fetching leaderboard:", err)
         res.status(500).json({
             message: "Internal Server Error"
@@ -164,8 +168,6 @@ const getLeaderboard = async (req, res) => {
     }
 }
 
-module.exports = {
-    getQuizQuestions,
-    submitQuiz,
-    getLeaderboard
+return { getQuizQuestions, submitQuiz, getLeaderboard }
 }
+module.exports = { ...createQuizController(new PrismaClient()), createQuizController }
