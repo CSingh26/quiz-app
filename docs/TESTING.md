@@ -2,7 +2,7 @@
 
 ## Local verification — October 1, 2026
 
-These results describe local checks of the distributed refactor. They do not establish a completed hosted CI/release run, registry publication, public deployment, penetration test, load test or accessibility certification.
+These results describe local checks of the distributed refactor. The [release verification record](RELEASE_VERIFICATION.md) separately confirms hosted CI, GHCR publication, anonymous pulls and local tests of published images. Neither record establishes public deployment, penetration testing, load capacity or accessibility certification.
 
 | Check                               | Observed evidence                                                                                                                                                                                           |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

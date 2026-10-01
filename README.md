@@ -33,7 +33,7 @@ See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for host-process development, configurat
 
 The current local checks include 37 platform unit tests, 13 real-HTTP proxy tests, 33 PostgreSQL integration tests and 18 desktop/mobile browser cases. Legacy checks remain separate. [TESTING.md](docs/TESTING.md) records commands and exact verification scope.
 
-Release candidate image names are `ghcr.io/csingh26/quizbee-web:2.0.0-rc.1`, `ghcr.io/csingh26/quizbee-api:2.0.0-rc.1`, `ghcr.io/csingh26/quizbee-worker:2.0.0-rc.1` and `ghcr.io/csingh26/quizbee-legacy:2.0.0-rc.1`. These are intended release coordinates; publication, registry pulls and hosted release verification are not yet confirmed here.
+Release candidate image names are `ghcr.io/csingh26/quizbee-web:2.0.0-rc.1`, `ghcr.io/csingh26/quizbee-api:2.0.0-rc.1`, `ghcr.io/csingh26/quizbee-worker:2.0.0-rc.1` and `ghcr.io/csingh26/quizbee-legacy:2.0.0-rc.1`. All four images are public for Linux AMD64 and ARM64. [Release v2.0.0-rc.1](https://github.com/CSingh26/quiz-app/releases/tag/v2.0.0-rc.1) includes immutable digests; [release verification](docs/RELEASE_VERIFICATION.md) records successful anonymous pulls, attestations and local tests of the published images.
 
 [Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [Shared storage](docs/STORAGE.md) · [AI pipeline](docs/AI_PIPELINE.md) · [Document processing](docs/DOCUMENT_PROCESSING.md) · [Assessment integrity](docs/ASSESSMENT_INTEGRITY.md) · [Privacy](docs/PRIVACY.md) · [Security](SECURITY.md)
 
