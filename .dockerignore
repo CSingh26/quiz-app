@@ -1,0 +1,14 @@
+.git
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+**/.quizbee-private
+**/*.tsbuildinfo
+**/test-results
+**/playwright-report
+**/coverage
+.impeccable
+.superpowers
+.codex
+*.log

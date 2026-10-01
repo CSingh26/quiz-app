@@ -1,5 +1,15 @@
 name: Quality
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -23,25 +33,49 @@ jobs:
       APP_ORIGIN: http://127.0.0.1:3018
       ALLOW_LOCAL_HTTP: "true"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
-      - run: npm ci --prefix backend && npm ci --prefix frontend
+            services/platform/package-lock.json
+      - run: npm ci --prefix backend && npm ci --prefix frontend && npm ci --prefix services/platform
       - run: npm run build --prefix backend
-      - run: npm run db:generate --prefix frontend
-      - run: frontend/node_modules/.bin/prisma validate --schema frontend/prisma/schema.prisma
-      - run: npm run db:migrate --prefix frontend
-      - run: frontend/node_modules/.bin/prisma migrate status --schema frontend/prisma/schema.prisma
-      - run: npm run lint --prefix backend && npm run lint --prefix frontend && npm run typecheck --prefix frontend
+      - run: npm run db:generate --prefix services/platform
+      - run: services/platform/node_modules/.bin/prisma validate --schema services/platform/prisma/schema.prisma
+      - run: npm run db:migrate --prefix services/platform
+      - run: services/platform/node_modules/.bin/prisma migrate status --schema services/platform/prisma/schema.prisma
+      - run: npm run lint --prefix backend && npm run lint --prefix frontend && npm run typecheck --prefix frontend && npm run typecheck --prefix services/platform
       - run: npm run test --prefix backend
-      - run: npm test --prefix frontend
-      - run: npm run test:integration --prefix frontend
-      - run: npm run format:check --prefix frontend
+      - run: npm test --prefix frontend && npm test --prefix services/platform
+      - run: npm run test:integration --prefix services/platform
+      - name: Start private S3 fixture
+        run: |
+          docker run --rm -d --name quizbee-s3-ci -p 127.0.0.1:18333:8333 -v "$PWD/docker/s3.local.json:/etc/seaweedfs/s3.json:ro" chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -volume.max=32 -master.volumeSizeLimitMB=256 -ip=127.0.0.1
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null http://127.0.0.1:18333; then break; fi
+            sleep 1
+          done
+      - name: Initialize isolated private buckets
+        working-directory: services/platform
+        env:
+          S3_ENDPOINT: http://127.0.0.1:18333
+          AWS_ACCESS_KEY_ID: quizbee-local-admin
+          AWS_SECRET_ACCESS_KEY: quizbee-local-admin-only
+          S3_INIT_BUCKETS: quizbee-storage-test
+        run: node --input-type=module < ../../docker/s3-init.mjs
+      - name: Verify shared storage across independent processes
+        env:
+          S3_ENDPOINT: http://127.0.0.1:18333
+          S3_BUCKET: quizbee-storage-test
+          S3_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: quizbee-local-app
+          AWS_SECRET_ACCESS_KEY: quizbee-local-app-only
+        run: npm run test:storage --prefix services/platform
+      - run: npm run format:check --prefix frontend && npm run format:check --prefix services/platform
       - name: Start isolated MongoDB replica set
         run: |
           docker run --rm -d --name quizbee-portfolio-ci -p 127.0.0.1:27028:27017 mongo:7.0@sha256:b6421fd6d1c5ded6377b397d8983e2f82e2100dc5123332dcfda2065a472be5b --replSet rs0 --bind_ip_all
@@ -56,5 +90,34 @@ jobs:
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
       - run: npm run test:e2e --prefix frontend
-      - run: npm audit --omit=dev --prefix backend && npm audit --omit=dev --prefix frontend
+      - run: npm audit --omit=dev --prefix backend && npm audit --omit=dev --prefix frontend && npm audit --omit=dev --prefix services/platform
       - run: python3 scripts/check_secrets.py
+
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Build application images
+        run: docker compose -f compose.yaml -f compose.distributed.yaml build api ingestion web
+      - name: Build preserved legacy image
+        run: docker build -f docker/legacy.Dockerfile -t quizbee-legacy:test .
+      - name: Start distributed application with two ingestion replicas
+        run: docker compose -f compose.yaml -f compose.distributed.yaml up -d --wait --wait-timeout 120 --scale ingestion=2
+      - name: Verify registration, upload, worker extraction, mail and account deletion
+        run: node frontend/tests/smoke/local.mjs
+      - name: Inspect healthy services and non-root image users
+        run: |
+          docker compose -f compose.yaml -f compose.distributed.yaml ps
+          for image in ghcr.io/csingh26/quizbee-web:local ghcr.io/csingh26/quizbee-api:local ghcr.io/csingh26/quizbee-worker:local quizbee-legacy:test; do
+            test "$(docker image inspect --format '{{.Config.User}}' "$image")" = node
+          done
+      - name: Container diagnostics
+        if: failure()
+        run: docker compose -f compose.yaml -f compose.distributed.yaml logs --tail 100
+      - name: Stop disposable CI stack
+        if: always()
+        run: docker compose -f compose.yaml -f compose.distributed.yaml down

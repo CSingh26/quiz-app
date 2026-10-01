@@ -1,0 +1,6 @@
+{
+  "identities": [
+    { "name": "local-bootstrap", "credentials": [{ "accessKey": "quizbee-local-admin", "secretKey": "quizbee-local-admin-only" }], "actions": ["Admin", "Read", "Write", "List", "Tagging"] },
+    { "name": "quizbee-app", "credentials": [{ "accessKey": "quizbee-local-app", "secretKey": "quizbee-local-app-only" }], "actions": ["Read:quizbee-materials", "Write:quizbee-materials", "List:quizbee-materials", "Read:quizbee-storage-test", "Write:quizbee-storage-test", "List:quizbee-storage-test"] }
+  ]
+}

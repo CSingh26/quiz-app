@@ -1,0 +1,121 @@
+# Local distributed application overlay: docker compose -f compose.yaml -f compose.distributed.yaml up --build
+# Development scanning bypass is explicit here; published images default to production and fail closed.
+x-platform-environment: &platform-environment
+  PLATFORM_DATABASE_URL: postgresql://quizbee:quizbee_local_only@postgres:5432/quizbee_v2?schema=public&connection_limit=10
+  APP_ORIGIN: http://localhost:3018
+  ALLOW_LOCAL_HTTP: "true"
+  STORAGE_DRIVER: s3
+  S3_ENDPOINT: http://objectstore:8333
+  S3_BUCKET: quizbee-materials
+  S3_REGION: us-east-1
+  S3_FORCE_PATH_STYLE: "true"
+  S3_PREFIX: quizbee/
+  AWS_ACCESS_KEY_ID: quizbee-local-app
+  AWS_SECRET_ACCESS_KEY: quizbee-local-app-only
+x-worker: &worker
+  image: ghcr.io/csingh26/quizbee-worker:${QUIZBEE_VERSION:-local}
+  build:
+    context: .
+    dockerfile: docker/platform.Dockerfile
+    target: worker
+  init: true
+  restart: unless-stopped
+  read_only: true
+  tmpfs: ["/tmp:size=268435456,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  mem_limit: 768m
+  stop_grace_period: 100s
+  depends_on:
+    migrate: {condition: service_completed_successfully}
+    objectstore-init: {condition: service_completed_successfully}
+services:
+  objectstore:
+    image: chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -volume.max=32 -master.volumeSizeLimitMB=256 -volume.preStopSeconds=1 -ip=objectstore -ip.bind=0.0.0.0
+    ports: ["127.0.0.1:18333:8333"]
+    volumes:
+      - quizbee-objects:/data
+      - ./docker/s3.local.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9333/cluster/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  objectstore-init:
+    image: ghcr.io/csingh26/quizbee-api:${QUIZBEE_VERSION:-local}
+    build: {context: ., dockerfile: docker/platform.Dockerfile, target: api}
+    command: ["node", "scripts/s3-init.mjs"]
+    environment:
+      S3_ENDPOINT: http://objectstore:8333
+      S3_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: quizbee-local-admin
+      AWS_SECRET_ACCESS_KEY: quizbee-local-admin-only
+      S3_INIT_BUCKETS: quizbee-materials,quizbee-storage-test
+    depends_on:
+      objectstore: {condition: service_healthy}
+    restart: "no"
+  migrate:
+    image: ghcr.io/csingh26/quizbee-api:${QUIZBEE_VERSION:-local}
+    build: {context: ., dockerfile: docker/platform.Dockerfile, target: api}
+    command: ["npm", "run", "db:migrate"]
+    environment:
+      PLATFORM_DATABASE_URL: postgresql://quizbee:quizbee_local_only@postgres:5432/quizbee_v2?schema=public
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: "no"
+  api:
+    image: ghcr.io/csingh26/quizbee-api:${QUIZBEE_VERSION:-local}
+    build: {context: ., dockerfile: docker/platform.Dockerfile, target: api}
+    environment:
+      <<: *platform-environment
+      UPLOADS_ENABLED: "true"
+      GENERATION_ENABLED: ${GENERATION_ENABLED:-false}
+      SMTP_HOST: mail
+      SMTP_PORT: "1025"
+      MAIL_FROM: QuizBee <noreply@quizbee.local>
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      objectstore-init: {condition: service_completed_successfully}
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=67108864,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    stop_grace_period: 20s
+  ingestion:
+    <<: *worker
+    environment:
+      <<: *platform-environment
+      WORKER_KINDS: ingestion
+      NODE_ENV: development
+      ALLOW_UNSCANNED_UPLOADS: "true"
+  generation:
+    <<: *worker
+    environment:
+      <<: *platform-environment
+      WORKER_KINDS: generation
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+  web:
+    image: ghcr.io/csingh26/quizbee-web:${QUIZBEE_VERSION:-local}
+    build: {context: ., dockerfile: docker/web.Dockerfile}
+    environment:
+      PLATFORM_API_URL: http://api:4010
+    ports: ["127.0.0.1:3018:3000"]
+    depends_on:
+      api: {condition: service_healthy}
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=67108864,mode=1777", "/app/.next/cache:size=67108864,uid=1000,gid=1000"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+volumes:
+  quizbee-objects:
+    name: quizbee-v2-objects
