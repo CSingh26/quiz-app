@@ -14,13 +14,15 @@ Use the repository's private vulnerability reporting channel if the host offers 
 - Grades derive only from the attempt snapshot and validated answers. Deadlines, attempt limits, answer revisions and finalization are server-authoritative. Active or unreleased exams do not disclose answer keys through result or dashboard paths.
 - File processing enforces size/archive budgets and rejects unsafe paths, encryption, links, macros and external XML relationships. Production extraction requires successful malware scanning.
 - AI responses are untrusted. Schema, count/type/difficulty and real context provenance must validate before an atomic quiz/job publish. Errors crossing into persistence or logs must be fixed safe messages, not raw model/document values.
-- Deletion and publication coordinate with row locks. File-deletion intent survives database deletion in an outbox; stale workers cannot overwrite newer job outcomes.
+- Deletion and publication coordinate with row locks. File-deletion intent survives database deletion in an outbox; API deletion does not wait for object storage. Workers remove originals asynchronously with bounded concurrent retries. Stale workers cannot overwrite newer job outcomes.
 
 ## Trust assumptions and residual exposure
 
-The operator controls environment settings, database credentials, SMTP/provider endpoints and scanner executable. Forwarded client addresses are trusted only behind a proxy that overwrites the header. Default direct-client limits share a bucket; this is not a mature abuse-prevention system.
+The operator controls environment settings, database credentials, SMTP/provider endpoints and scanner executable. The web strips forwarding headers by default. Set web `TRUST_PLATFORM_PROXY=true` and API `TRUST_PROXY=true` only behind controlled ingress that overwrites `x-forwarded-for` with one validated client IP and prevents direct public access to web. Never trust a public caller to provide that identity. Default direct-client limits share a bucket; this is not a mature abuse-prevention system.
 
-The extraction subprocess has resource limits but inherits worker environment and OS privileges. It is not a filesystem/network sandbox or credential-isolated service. Public deployment should use a restricted parsing identity/container with minimal credentials and access. Local malware bypass is not acceptable for public upload handling.
+Scanner/parser children have resource limits and explicit environment allowlists excluding database, provider, storage and Node preload settings. They retain the worker OS identity and filesystem/network privileges; they are not an OS sandbox. Public deployment should use a restricted parsing identity/container with minimal credentials and access. Local malware bypass is not acceptable for public upload handling.
+
+The web proxy holds no database/provider secrets; the independent API and workers share PostgreSQL and private storage. S3 bucket access, encryption, version retention and backup policy remain operator responsibilities.
 
 The new `/api/v2` routes and legacy frontend can share an origin. Route prefixes and separate database cookies do not isolate an XSS or compromised page at that origin. Review legacy/shared code when evaluating new-platform exposure, or separate origins under an explicit migration plan.
 

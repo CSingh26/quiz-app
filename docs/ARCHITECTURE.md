@@ -1,47 +1,52 @@
 # Architecture
 
-QuizBee 2.0 uses a same-origin Next.js interface and `/api/v2` API, a shared TypeScript domain layer, PostgreSQL through Prisma, and a separate Node.js worker. The existing Express/MongoDB service remains operational under its legacy protocol.
+QuizBee 2.0 separates its web interface, API and role-specific workers into independently runnable processes. API replicas and workers share one PostgreSQL transaction boundary and one private storage identity. This is a distributed application with shared transactional state, not database-per-service microservices. The preserved Express/MongoDB stack uses separate data and authentication.
 
 ```mermaid
 flowchart LR
-  Browser[Study workspace] --> API[Next.js /api/v2]
-  API --> Auth[Opaque sessions and ownership checks]
-  Auth --> Services[Assessment, courses, banks, materials]
-  Services --> Domain[Strict schemas and grading]
-  Services --> DB[(PostgreSQL)]
-  Services --> Files[Private local files]
-  Worker[Node worker] --> DB
-  Worker --> Files
-  Worker --> Extract[Bounded extraction subprocess]
-  Worker --> AI[Configured AI provider]
+  Browser[Study workspace] --> Web[Next.js UI and bounded /api/v2 proxy]
+  Web --> API[Independent Node API replicas]
+  API --> DB[(Shared PostgreSQL)]
+  API --> Objects[Private S3-compatible storage]
   API --> SMTP[Configured SMTP]
+  Ingestion[Ingestion workers] --> DB
+  Ingestion --> Objects
+  Ingestion --> Parser[Private staging, scanner and parser]
+  Generation[Generation workers] --> DB
+  Generation --> Provider[Configured AI provider]
 ```
 
-## Boundaries and implementation
+## Source and runtime boundaries
 
-- `frontend/src/app/study` and `frontend/src/components/study`: browser workflows and rendering. Browser scores and countdowns are presentation, never grading authority.
-- `frontend/src/app/api/v2/[...path]/route.ts`: transport routing, session/origin checks, body limits, rate limits and response envelopes.
-- `frontend/src/domain/assessment.ts`: validated question and answer shapes, snapshot construction, option validation, objective grading and disclosure rules.
-- `frontend/src/server`: ownership-scoped services, Prisma transactions, identity, courses, grading review, private banks, mail and storage cleanup.
-- `frontend/src/server/ingestion`, `ai`, and `jobs`: file parsing, source validation, configured provider adapter and leased queue.
-- `frontend/prisma`: PostgreSQL schema and ordered migrations. The MongoDB schema remains in `backend/prisma`.
+- `frontend/src/app/study` and `frontend/src/components/study` render browser workflows. Browser scores and countdowns are presentation, never grading authority.
+- `frontend/src/app/api/v2/[...path]/route.ts` delegates to `frontend/src/lib/platform-proxy.ts`. This bounded same-origin gateway preserves browser Origin, cookies and API responses while dropping client-supplied forwarding/identity headers by default. Optional trusted client-IP forwarding requires the controlled-ingress prerequisites in [DEPLOYMENT.md](DEPLOYMENT.md). It reads `PLATFORM_API_URL` at runtime. The frontend has no Prisma client, domain grading code, database credentials or provider credentials.
+- `services/platform/src/api/server.ts` adapts bounded Node HTTP requests to standard Request/Response objects. `handler.ts` routes `/api/v2`, authenticates sessions and origins, and applies quotas. `run.ts` owns listener startup and draining.
+- `services/platform/src/domain/assessment.ts` validates questions and answers, constructs snapshots, grades objective answers and controls answer disclosure.
+- `services/platform/src/server` holds ownership-scoped services, Prisma transactions, identity, courses, manual review, banks, mail and cleanup. Its `ingestion`, `ai` and `jobs` directories implement extraction, source validation, provider calls and leased work.
+- `services/platform/prisma` owns the PostgreSQL schema and ordered migrations. Legacy MongoDB remains in `backend/prisma`.
 
-Mutations reject unknown payload keys. Session tokens are opaque random values whose hashes are stored in PostgreSQL. Role checks grant course creation to instructors; ownership and membership still govern individual resources. Selecting instructor at registration does not establish an externally verified professional identity.
+Sessions are opaque random tokens stored as hashes. Mutations reject unknown payload keys and require the configured browser Origin. Instructors can create courses, but ownership and membership still govern access to each resource. Self-service instructor registration does not verify institutional identity.
 
-## State and concurrency
+## State, replicas and jobs
 
-Every quiz save appends an immutable numbered version. Assignments pin a version, and attempts copy the presented questions, settings, shuffle order and review policy. Attempts store their deadline and current answer revision. Row locks and bounded transaction retries serialize sensitive decisions, including starting an attempt, saving answers and submitting a final grade.
+Every quiz save appends an immutable numbered version. Assignments pin one version; attempts store presented questions, shuffle order, settings, review policy, deadline and answer revision. PostgreSQL row locks and bounded transaction retries serialize eligibility decisions, saves and finalization. Database time is read after the relevant lock, so a web/API host clock cannot extend an exam, session or job lease.
 
-The worker claims queued or expired leased jobs with `FOR UPDATE SKIP LOCKED`. A five-minute lease, heartbeat and monotonically increasing attempt count prevent stale workers from publishing a second result. Generated quiz creation and job completion share a transaction. Source rows are locked during publication, ordering it against deletion.
+Workers select `ingestion`, `generation` or both with `WORKER_KINDS`. They claim queued or expired work using `FOR UPDATE SKIP LOCKED`. Five-minute leases, periodic heartbeats and monotonically increasing attempt counts fence stale workers. Generated quiz creation and job completion share a transaction; source locks serialize publication against deletion. Replicas share these records rather than maintaining separate in-memory queues.
 
-Deleting material or an account records private file keys in a durable `StorageDeletion` outbox within the database transaction. Immediate cleanup and the worker retry physical deletion. This coordinates eventual filesystem cleanup; it is not a transactional filesystem or a retention guarantee.
+Worker maintenance runs at startup and at loop boundaries at least 60 seconds apart. It finalizes bounded batches of due attempts, drains durable object deletions, and prunes expired sessions, tokens and rate-limit records. Long jobs can delay a sweep; API reads/writes still enforce deadlines. Shutdown stops new claims and allows active work to finish. A crash leaves a lease that can be reclaimed.
 
-Maintenance runs at worker startup and on loop boundaries at least 60 seconds apart. It finalizes up to 100 due attempts through the regular grading engine, drains deletion work, and removes expired session/token/rate-limit rows. A long-running job can delay the next sweep; request-time checks still enforce deadlines.
+## Storage and processing
 
-## Legacy coexistence
+The API and workers use the same private S3-compatible bucket/prefix across hosts. The local adapter remains available when all participating processes can access the same directory. Changing adapters does not migrate existing keys. See [STORAGE.md](STORAGE.md) for configuration and deletion/versioning limits.
 
-The legacy API uses JWT cookies, MongoDB collections and the option-text answer protocol. The new API uses revocable PostgreSQL sessions and stable choice IDs. Their data models and credentials are separate, and no migration is automatic.
+Ingestion stages one object snapshot in a private temporary directory, scans and parses it, and cleans up afterward. Scanner/parser children receive an explicit environment allowlist without database, provider or storage credentials. They retain the worker OS identity and access; resource bounds and environment filtering are not an OS sandbox.
 
-Separate routes are a compatibility boundary, **not security isolation**. Legacy and new pages served from the same origin share the browser origin's trust. Public operation would need a review of the whole served application, or origin separation with an explicit migration plan.
+Material/account deletion records opaque storage keys in a transactional `StorageDeletion` outbox. The API commits access revocation and outbox entries without contacting storage. Workers attempt up to five physical deletions concurrently per maintenance sweep; failures remain queued and retries rotate by attempt count, then age. Object storage and PostgreSQL do not participate in a distributed transaction, and application deletion does not erase backups or retained object versions.
 
-See [database](DATABASE.md), [assessment rules](ASSESSMENT_INTEGRITY.md), [processing boundaries](DOCUMENT_PROCESSING.md), and [limitations](LIMITATIONS.md).
+## Operation and legacy coexistence
+
+The web exposes `/api/health`; the API exposes `/healthz` and database-backed `/readyz`; workers expose progress/readiness health on their configured port. Docker images run application processes as a non-root user. The local overlay supplies shared services, one-shot migration/bucket initialization and independent worker roles. Runtime health is not proof of provider credentials, scanner quality or production readiness.
+
+Legacy uses JWT cookies and option-text answers; v2 uses revocable PostgreSQL sessions and stable choice IDs. Separate routes provide compatibility, not browser security isolation. Legacy and new pages on one origin share that origin's trust. Public operation requires reviewing the whole served application or separating origins explicitly.
+
+See [DEPLOYMENT.md](DEPLOYMENT.md), [DATABASE.md](DATABASE.md), [ASSESSMENT_INTEGRITY.md](ASSESSMENT_INTEGRITY.md), [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) and [LIMITATIONS.md](LIMITATIONS.md).

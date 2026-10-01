@@ -1,81 +1,112 @@
-# Local operation and future deployment requirements
+# Local operation and release preparation
 
-This repository has been worked on locally. No production deployment, DNS change, external email rollout, live AI credential configuration or data migration is implied by this guide.
+This guide describes local operation of the independent web, API and worker processes. It does not establish a production deployment, published image, external email rollout or live AI configuration. API replicas and workers share PostgreSQL and private storage; they do not own separate databases.
 
-## Local setup
+## Local Docker overlay
 
-Install Node.js 24 (minimum 22.13 for PDF.js) and Docker Compose. From the repository root:
+From the repository root:
 
 ```sh
-docker compose up -d
+docker compose -f compose.yaml -f compose.distributed.yaml up --build -d
+docker compose -f compose.yaml -f compose.distributed.yaml ps
+```
+
+The overlay builds local images and starts PostgreSQL, Mailpit, private SeaweedFS S3 storage, schema migration, bucket initialization, API, web, and separate ingestion/generation workers. Open [localhost:3018](http://localhost:3018) and register an account. No sample account is seeded. Mailpit's [local inbox](http://localhost:8025) receives verification/reset mail; it does not send it to the public Internet.
+
+The web, database, object-store and mail host ports bind loopback. The API and worker health ports stay inside the Compose network. Application containers run as a non-root user with read-only roots, bounded temporary mounts, memory limits, dropped capabilities and no-new-privileges. PostgreSQL and object-store named volumes persist application data.
+
+**This overlay is for local development.** It contains intentionally local credentials and sets the ingestion worker to `NODE_ENV=development` with `ALLOW_UNSCANNED_UPLOADS=true`. Production-mode ingestion refuses that bypass and requires a real scanner. Do not expose this configuration as a public deployment. Generation is off unless enabled explicitly with a working provider on the generation worker.
+
+```sh
+docker compose -f compose.yaml -f compose.distributed.yaml logs --tail=100 api ingestion generation web
+docker compose -f compose.yaml -f compose.distributed.yaml stop
+```
+
+Stopping retains volumes. Removing PostgreSQL or object-store volumes erases data; it is not an ordinary restart step.
+
+## Host-process development
+
+Use Node.js 24 (minimum 22.13 for PDF.js) and Docker Compose. Stop the overlay's web/API/workers before reusing their ports or working against the same queue with host processes. Start PostgreSQL and Mailpit with `docker compose up -d`.
+
+From the repository root, install each independent package and copy its example settings:
+
+```sh
+cp services/platform/.env.example services/platform/.env
 cp frontend/.env.example frontend/.env
-cd frontend
-npm ci
+npm ci --prefix services/platform
+npm ci --prefix frontend
+cd services/platform
 npm run db:generate
 npm run db:migrate
-npm run dev:platform
+npm run dev
 ```
 
-The web app is [localhost:3018](http://localhost:3018). Register your own account; there is no seeded user. The Compose database uses deliberately local-only credentials and binds port 55439 to loopback. Its named volume persists data when containers restart.
-
-Start a second terminal in `frontend`:
+The API defaults to `127.0.0.1:4010`. Keep `APP_ORIGIN=http://localhost:3018` aligned with the browser URL. `localhost` and `127.0.0.1` are different origins. Run the web from another terminal at the repository root:
 
 ```sh
-NODE_ENV=development npm run worker
+npm run dev:platform --prefix frontend
 ```
 
-For one maintenance pass and at most one queued job:
+Run the worker from a third terminal:
 
 ```sh
-NODE_ENV=development npm run worker -- --once
+cd services/platform
+NODE_ENV=development WORKER_KINDS=ingestion,generation npm run worker
 ```
 
-The worker must remain running for background extraction, generation, abandoned-attempt cleanup and durable file deletion. It checks maintenance at startup and loop boundaries at least 60 seconds apart; work in progress can delay a sweep. Graceful termination finishes the active unit of work. A crashed worker's lease becomes reclaimable.
+For one maintenance pass and at most one job, append `-- --once`. For separate host workers, use `WORKER_KINDS=ingestion` and `WORKER_KINDS=generation`, with different `WORKER_HEALTH_PORT` values. Worker shutdown stops new claims and waits for active work; crashed leases can be reclaimed. Maintenance runs on loop boundaries and can be delayed by work in progress. Material/account deletion revokes database access and queues storage keys immediately; physical file removal requires a worker. Each sweep attempts at most five deletions concurrently, with durable retries after storage errors.
 
-Compose also starts local Mailpit on SMTP port 1025 and [the inbox at localhost:8025](http://localhost:8025). Verification and reset requests are delivered to this inbox, not the public Internet. Tokens last 30 minutes and are single-use. SMTP configuration does not automatically make email verification mandatory for login.
+For a single-host local filesystem setup, every API/worker must resolve the same `PRIVATE_STORAGE_DIR`. Cross-host operation requires shared storage; use the S3 adapter described in [STORAGE.md](STORAGE.md). The Docker overlay supplies that adapter and creates the local buckets. Changing storage settings does not move existing objects.
 
-## Configuration
+## Configuration by process
 
-| Setting | Meaning |
-| --- | --- |
-| `PLATFORM_DATABASE_URL` | New PostgreSQL database; never a MongoDB URL |
-| `APP_ORIGIN` | Exact browser origin for unsafe requests and account links |
-| `PRIVATE_STORAGE_DIR` | Private storage shared by web and worker; relative paths resolve from their working directory |
-| `MALWARE_SCAN_COMMAND` | ClamAV-compatible executable path; scanner failure prevents extraction |
-| `ALLOW_UNSCANNED_UPLOADS` | Explicit nonproduction local bypass; production refuses it |
-| `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` | All required for optional generation; no keys are supplied |
-| `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM` | SMTP delivery configuration |
-| `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` | Optional SMTP TLS/authentication settings |
-| `TRUST_PROXY` | Trust forwarded client addresses only behind a controlled proxy that overwrites that header |
-| `ALLOW_LOCAL_HTTP` | Explicit loopback-only HTTP allowance for testing a production build; never public operation |
-| `NEXT_PUBLIC_API_BASE_URL` | Legacy Express API URL with trailing slash; unrelated to new API routing |
+| Process               | Settings and responsibility                                                                                                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Web                   | Runtime `PLATFORM_API_URL` is an HTTP(S) API origin, default `http://127.0.0.1:4010`; no path, credentials, query or fragment. Optional `PLATFORM_API_TIMEOUT_MS` is 1–60000 ms, default 30000. `TRUST_PLATFORM_PROXY` defaults off; see the ingress prerequisite below. |
+| Browser legacy client | `NEXT_PUBLIC_API_BASE_URL` is the legacy Express URL with a trailing slash, embedded at build time; it does not route v2.                                                                                                                                                |
+| API                   | `API_HOST`, `PORT`, `APP_ORIGIN`, `PLATFORM_DATABASE_URL`, storage settings and optional SMTP settings. `UPLOADS_ENABLED` and `GENERATION_ENABLED` advertise capabilities without placing scanner/provider secrets on the API host.                                      |
+| All workers           | The shared `PLATFORM_DATABASE_URL` and storage identity; `WORKER_KINDS`, `WORKER_HEALTH_HOST`, `WORKER_HEALTH_PORT` (default 8081).                                                                                                                                      |
+| Ingestion worker      | `MALWARE_SCAN_COMMAND`, private scratch `STAGING_DIR`, and storage credentials. `ALLOW_UNSCANNED_UPLOADS` is a nonproduction local bypass only.                                                                                                                          |
+| Generation worker     | `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL`; all are required for provider calls. Keep provider secrets off the web.                                                                                                                                                         |
+| Mail                  | API `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM`, optional `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`.                                                                                                                                                                         |
 
-Keep local environment files untracked. Match `APP_ORIGIN` to the URL in the address bar, including scheme and port. If using `http://127.0.0.1:3018`, change the origin from `localhost` accordingly. Use the same settings and working directory for web and worker. A mismatched origin intentionally rejects mutations.
+Keep environment files untracked. The service CLI loads `.env` from `services/platform`; the frontend environment contains only web/legacy URL settings. A generation capability flag is not a provider health check. See [AI_PIPELINE.md](AI_PIPELINE.md) and [STORAGE.md](STORAGE.md) for detailed settings.
 
-When `TRUST_PROXY` is false, unauthenticated request limiting uses a shared direct-client bucket. Do not enable proxy trust merely to change the limiter: a public client must not be able to supply its own trusted forwarding header.
+Production authentication requires HTTPS. `ALLOW_LOCAL_HTTP=true` permits only loopback origins for local production-build checks. The proxy preserves browser Origin and strips forwarding/identity headers. By default, web strips forwarding headers and API `TRUST_PROXY=false` uses a shared unauthenticated direct-client bucket. Distinct client-IP buckets require both web `TRUST_PLATFORM_PROXY=true` and API `TRUST_PROXY=true`. Enable them only when a controlled ingress overwrites `x-forwarded-for` with exactly one validated client IP and direct public access to web is blocked. Do not enable trusted mode on a publicly reachable web port or forward a caller-supplied header unchanged.
 
-## Build and inspect locally
+Verification/reset links are single-use and expire after 30 minutes. SMTP configuration does not make email verification mandatory for login.
+
+## Health and standalone builds
+
+- Web `GET /api/health` is local liveness and requires no database or API connection.
+- API `GET /healthz` is process liveness; `GET /readyz` checks PostgreSQL readiness.
+- Worker `GET /healthz` reports progress and role; `GET /readyz` also checks PostgreSQL. The host default is loopback port 8081.
+
+Build the web with `npm run build --prefix frontend`. Docker copies the generated `.next/standalone`, `.next/static` and `public` files and runs `node server.js`. The browser-test launcher mirrors that standalone layout on loopback port 3018; see [TESTING.md](TESTING.md). The API and worker use their own service package and image, independently of the web build.
+
+## Release candidate images
+
+The release workflow publishes these versioned coordinates after quality checks pass:
+
+- `ghcr.io/csingh26/quizbee-web:2.0.0-rc.1`
+- `ghcr.io/csingh26/quizbee-api:2.0.0-rc.1`
+- `ghcr.io/csingh26/quizbee-worker:2.0.0-rc.1`
+- `ghcr.io/csingh26/quizbee-legacy:2.0.0-rc.1`
+
+Use the [GitHub release](https://github.com/CSingh26/quiz-app/releases/tag/v2.0.0-rc.1) and its digest assets to confirm the published revision. The local overlay builds images itself and defaults to `local`. To evaluate published images locally once the release is available:
 
 ```sh
-cd frontend
-npm run build
-npm run start -- -H 127.0.0.1 -p 3018
+export QUIZBEE_VERSION=2.0.0-rc.1
+docker compose -f compose.yaml -f compose.distributed.yaml pull
+docker compose -f compose.yaml -f compose.distributed.yaml up -d --no-build --wait
 ```
 
-The example's `ALLOW_LOCAL_HTTP=true` permits this loopback-only production-build check. Production-mode uploads still require a real malware scanner. Use the development web server and development worker when testing the explicit unscanned local workflow. `AI_BASE_URL` and SMTP settings are server configuration; the legacy public API URL is embedded in the frontend build.
+Private packages require registry login with an account that has package read access. Legacy remains a separate Express/MongoDB service and is not started by this overlay. [RELEASING.md](RELEASING.md) describes tags, attestations and rollback boundaries.
 
-To stop local services while retaining their data:
+## Before public operation
 
-```sh
-docker compose stop
-```
+Provide HTTPS, runtime secrets, restricted database/storage identities, private bucket policy, a real scanner, OS-level parser restrictions, monitoring, backups and tested restores. Scanner/parser children receive filtered environments but retain worker filesystem/network privileges. Container hardening is not a complete parser sandbox.
 
-Do not remove the named PostgreSQL volume unless you intentionally want to erase its local data. Tests use a separate guarded database; see [TESTING.md](TESTING.md).
+Establish retention/deletion policy, SMTP abuse/deliverability controls and AI provider data-handling terms. Use the same storage identity across replicas; changing bucket/prefix is a data migration. Back up PostgreSQL and corresponding objects together. Run committed migrations before compatible API/worker code; no automatic down-migration or legacy data importer exists. Review legacy pages on the same browser origin or separate them explicitly.
 
-## Before any future public deployment
-
-Provision HTTPS, a restricted database role, private shared/object storage, a real scanner, restricted parser processes, secret management, worker supervision, backups and restore tests. The current parser subprocess inherits credentials and is not an OS sandbox. A new-platform object-storage adapter is not implemented.
-
-Pin and review container images; the local Compose file is not a hardened deployment specification. Establish operational monitoring for failed jobs and cleanup backlog, a retention/deletion policy, SMTP abuse/deliverability controls and provider data-handling terms. Review the legacy pages as part of the same browser origin, or serve them on a separate origin; URL prefixes alone do not isolate their security exposure.
-
-Run committed migrations before starting compatible application code. Back up both database and private files, and rehearse migration and restore on disposable copies. There is no automatic rollback migration or legacy data importer. [SECURITY.md](../SECURITY.md), [PRIVACY.md](PRIVACY.md) and [LIMITATIONS.md](LIMITATIONS.md) describe further boundaries.
+Local tests and workflow definitions do not prove public load capacity, hosted CI success or registry publication. See [TESTING.md](TESTING.md), [PRIVACY.md](PRIVACY.md), [LIMITATIONS.md](LIMITATIONS.md) and [SECURITY.md](../SECURITY.md).

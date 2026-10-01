@@ -4,9 +4,9 @@ AI generation is an optional configured workflow. Manual quiz creation, banks an
 
 ## Configuration and execution
 
-Set `AI_BASE_URL`, `AI_API_KEY` and `AI_MODEL` in the private frontend environment file, then restart web and worker processes. The base URL should include the provider's API prefix, for example `/v1`; the adapter appends `/chat/completions`. HTTPS is required except for loopback HTTP providers used in local development and tests. The provider must accept the requested structured JSON schema. Not every service claiming OpenAI compatibility supports that contract.
+Set `AI_BASE_URL`, `AI_API_KEY` and `AI_MODEL` only in the generation worker runtime (`services/platform/.env` for host development). Run it with `WORKER_KINDS=generation` or both supported roles. Set `GENERATION_ENABLED=true` on the API after the worker is configured; the web requires no provider credentials. Restart the affected API/worker processes. The base URL should include the provider's API prefix, for example `/v1`; the adapter appends `/chat/completions`. HTTPS is required except for loopback HTTP providers used in local development and tests. The provider must accept the requested structured JSON schema. Not every service claiming OpenAI compatibility supports that contract.
 
-Generation configuration reports only whether all three settings exist. It is not a health check, a credential validation, or proof of model support. Live external AI requests have not been part of the local fixture verification.
+The API reports availability from its explicit `GENERATION_ENABLED` capability override, or from provider configuration if no override is set. It is not a health check, a credential validation, or proof of model support. Live external AI requests have not been part of the local fixture verification.
 
 ## Processing steps
 

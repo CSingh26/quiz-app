@@ -1,65 +1,47 @@
 # QuizBee 2.0
 
-QuizBee is a local study and assessment platform with private quizzes, versioned question banks, document ingestion, resumable attempts, and instructor courses. Grades and deadlines are enforced by the server. Written responses remain pending until an instructor or an authorized practice self-review supplies a grade.
+QuizBee is a study and assessment platform with private quizzes, versioned question banks, document ingestion, resumable attempts and instructor courses. The API enforces grades and deadlines. Written responses remain pending until an instructor or an authorized practice self-review supplies a grade.
 
-The new application uses Next.js, TypeScript, Prisma and PostgreSQL. Its API is `/api/v2`, and its workspace is `/study`. The original Express/MongoDB application remains in `backend/` with its existing dashboard routes; it uses a separate database and authentication system.
+The application has independent Next.js web, Node.js API and background worker processes. API replicas and workers share PostgreSQL for transactional state and durable jobs, and private S3-compatible storage for uploaded originals. The browser API remains `/api/v2`; the workspace is `/study`. The original Express/MongoDB application remains in `backend/` with separate data and authentication.
 
 ## What works
 
-- Register your own student or instructor account, sign in, manage sessions, and request account email through configured SMTP.
-- Create private quizzes, keep immutable versions, and maintain private banks with folders, question metadata and random practice sampling.
-- Take nine question types with saved answers, stable question order, server deadlines, revision conflict checks and idempotent submission. Review results and create a practice quiz from mistakes.
-- Create courses, join by code, assign a fixed quiz version, set attempt limits and optional access codes, review grades, and export results as CSV.
+- Register a student or instructor account, sign in, manage sessions, and request verification/reset mail through configured SMTP.
+- Create private quizzes and banks with immutable versions, folders, question metadata and random practice sampling.
+- Take nine question types with saved answers, stable order, server deadlines, revision conflict checks and idempotent submission. Review results and create a practice quiz from mistakes.
+- Create courses, join by code, assign a fixed quiz version, set attempt limits and access codes, review grades, and export results as CSV.
 - Upload PDF, DOCX, TXT, Markdown, CSV, XLSX, PPTX or ZIP materials for background extraction into traceable source chunks.
-- Request source-cited quiz generation when an OpenAI-compatible provider is configured. Without provider settings, generation is explicitly unavailable; there are no simulated generated quizzes.
+- Request source-cited generation when a compatible AI provider is configured. Missing configuration is reported; there are no simulated generated quizzes.
 
-This delivery is for local testing. It has not been deployed or certified for production, proctoring, regulatory compliance, or high-stakes examinations. [Current limits](docs/LIMITATIONS.md) distinguish working features from extensions.
+This work is verified locally. Public deployment, high-stakes examination suitability and regulatory compliance are not established. [Current limits](docs/LIMITATIONS.md) distinguish implemented behavior from remaining work.
 
-## Run the new platform locally
+## Run the local Docker stack
 
-Use Docker Compose and Node.js 24; PDF extraction requires at least Node.js 22.13. From the repository root:
-
-```sh
-docker compose up -d
-cp frontend/.env.example frontend/.env
-cd frontend
-npm ci
-npm run db:generate
-npm run db:migrate
-npm run dev:platform
-```
-
-Open [QuizBee](http://localhost:3018) and register your own account. No demo user or administrator password is supplied. Keep `APP_ORIGIN=http://localhost:3018` aligned with the hostname and port you actually open; `localhost` and `127.0.0.1` are different origins.
-
-In a second terminal:
+From the repository root, with Docker Compose available:
 
 ```sh
-cd frontend
-NODE_ENV=development npm run worker
+docker compose -f compose.yaml -f compose.distributed.yaml up --build -d
 ```
 
-The worker processes files and generation jobs, expires abandoned timed attempts, retries file deletion, and prunes expired sessions and tokens. The example configuration explicitly permits **unscanned local development uploads**. Production refuses that bypass and requires a configured scanner. Keep web and worker processes pointed at the same database and private storage directory.
+The overlay builds web, API and worker images locally; it does not require a published release. It starts PostgreSQL, private SeaweedFS S3 storage, Mailpit, one-shot schema/bucket setup, the API, and separate ingestion and generation workers. Open [QuizBee](http://localhost:3018) and register your own account. Inspect local verification/reset mail in [Mailpit](http://localhost:8025). No demo account or administrator password is seeded.
 
-Compose starts PostgreSQL on loopback port 55439 and Mailpit SMTP on 1025. Inspect local verification/reset messages at [Mailpit](http://localhost:8025). AI credentials are empty by default. Setup, configuration and service limitations are detailed in [the operator guide](docs/DEPLOYMENT.md).
+**The local ingestion worker explicitly bypasses malware scanning in development mode.** The application images default to production and refuses that bypass; a real scanner is required for production ingestion. AI generation is off by default. The overlay uses disclosed local credentials and loopback ports and is not a public hosting specification.
 
-## Verification and design
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for host-process development, configuration, health checks, optional generation and persistent-volume handling. All platform API/worker database commands now run in `services/platform`, not `frontend`.
 
-```sh
-npm test --prefix frontend
-npm run typecheck --prefix frontend
-npm run lint --prefix frontend
-npm run build --prefix frontend
-```
+## Verification and release status
 
-Database and browser tests have additional isolated-service requirements; use [TESTING.md](docs/TESTING.md) for the current commands and evidence. Tests use clearly labeled fixtures; external AI and malware services are not assumed to have been exercised.
+The current local checks include 37 platform unit tests, 13 real-HTTP proxy tests, 33 PostgreSQL integration tests and 18 desktop/mobile browser cases. Legacy checks remain separate. [TESTING.md](docs/TESTING.md) records commands and exact verification scope.
 
-[Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [AI pipeline](docs/AI_PIPELINE.md) · [Document processing](docs/DOCUMENT_PROCESSING.md) · [Assessment integrity](docs/ASSESSMENT_INTEGRITY.md) · [Privacy](docs/PRIVACY.md) · [Security](SECURITY.md)
+Release candidate image names are `ghcr.io/csingh26/quizbee-web:2.0.0-rc.1`, `ghcr.io/csingh26/quizbee-api:2.0.0-rc.1`, `ghcr.io/csingh26/quizbee-worker:2.0.0-rc.1` and `ghcr.io/csingh26/quizbee-legacy:2.0.0-rc.1`. These are intended release coordinates; publication, registry pulls and hosted release verification are not yet confirmed here.
 
-## Run the preserved legacy application
+[Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [Shared storage](docs/STORAGE.md) · [AI pipeline](docs/AI_PIPELINE.md) · [Document processing](docs/DOCUMENT_PROCESSING.md) · [Assessment integrity](docs/ASSESSMENT_INTEGRITY.md) · [Privacy](docs/PRIVACY.md) · [Security](SECURITY.md)
 
-Legacy routes are `/login/student`, `/login/instructor`, `/register`, `/dashboard/student` and `/dashboard/instructor`. They call the Express service through `NEXT_PUBLIC_API_BASE_URL`, whose trailing slash is required. This setting does not configure the new `/api/v2` API.
+## Preserved legacy application
 
-Use a separate MongoDB replica set, copy `backend/.env.example` to `backend/.env`, and fill local settings. Generate an instructor bcrypt hash for `ADMIN_PWD`; do not enter a plaintext password there. S3 configuration is optional and used only for legacy profile images.
+Legacy routes include `/login/student`, `/login/instructor`, `/register`, `/dashboard/student` and `/dashboard/instructor`. They call Express through the build-time `NEXT_PUBLIC_API_BASE_URL`, whose trailing slash is required. This setting does not configure `/api/v2`.
+
+Use a separate MongoDB replica set, copy `backend/.env.example` to `backend/.env`, and fill local settings. Generate an instructor bcrypt hash for `ADMIN_PWD`; do not put a plaintext password there. Legacy S3 settings apply only to profile images.
 
 ```sh
 npm ci --prefix backend
@@ -69,4 +51,4 @@ npx prisma db push
 npm run dev
 ```
 
-The legacy API defaults to port 3876. In another terminal, run `npm run dev --prefix frontend` and open a legacy route at [localhost:3000](http://localhost:3000/login/student). Set `APP_ORIGIN` to the port you use if also testing the new workspace there. MongoDB setup and legacy checks remain in [TESTING.md](docs/TESTING.md). No automatic data or credential migration connects the two applications.
+Express defaults to port 3876. In another terminal at the repository root, run `npm ci --prefix frontend` and `npm run dev --prefix frontend`, then open [the legacy login](http://localhost:3000/login/student). If using `/study` on the same web process, run the independent platform API and match its `APP_ORIGIN` to that browser origin. The distributed Compose overlay does not start legacy Express or MongoDB. There is no automatic data or credential migration between stacks.
