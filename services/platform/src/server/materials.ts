@@ -7,7 +7,6 @@ import { MAX_FILE_BYTES } from "./ingestion/archive";
 import { SUPPORTED_EXTENSIONS } from "./ingestion/extract";
 import { parseGenerationInput } from "./ai/validation";
 import { providerConfiguration } from "./ai/provider";
-import { drainStorageDeletions } from "./storage-cleanup";
 
 function capability(value: string | undefined): boolean | undefined {
   if (value === undefined) return undefined;
@@ -167,7 +166,7 @@ export async function deleteMaterial(userId: string, id: string) {
     });
     await tx.studyMaterial.delete({ where: { id: material.id } });
   });
-  await drainStorageDeletions();
+  // The worker handles physical deletion without holding a browser request open.
   return { ok: true };
 }
 export async function getChunks(userId: string, id: string) {

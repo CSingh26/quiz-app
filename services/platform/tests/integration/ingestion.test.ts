@@ -24,6 +24,8 @@ test("local PostgreSQL upload, worker, private chunks and deletion complete with
   const api = await import("../../src/server/materials");
   const { runNextJob } = await import("../../src/server/jobs/worker");
   const { localStorage } = await import("../../src/server/ingestion/storage");
+  const { drainStorageDeletions } =
+    await import("../../src/server/storage-cleanup");
   const id = randomUUID();
   let userId: string | undefined;
   try {
@@ -73,6 +75,7 @@ test("local PostgreSQL upload, worker, private chunks and deletion complete with
       await db.materialChunk.count({ where: { materialId: material.id } }),
       0,
     );
+    await drainStorageDeletions();
     await assert.rejects(() => localStorage.read(ready.storageKey));
   } finally {
     if (userId) {
@@ -171,6 +174,7 @@ for (const scenario of [
         server.listen(0, "127.0.0.1", resolve),
       );
       let userId: string | undefined;
+      let storageKey: string | undefined;
       let firstWork: Promise<boolean> | undefined;
       let unlockUser: (() => void) | undefined,
         locker: Promise<unknown> | undefined,
@@ -193,13 +197,14 @@ for (const scenario of [
           },
         });
         userId = user.id;
+        storageKey = `${randomUUID()}.bin`;
         const material = await db.studyMaterial.create({
           data: {
             ownerId: user.id,
             name: "cells.txt",
             type: "txt",
             size: 25,
-            storageKey: `${randomUUID()}.bin`,
+            storageKey,
             status: "ready",
             chunks: {
               create: {
@@ -322,6 +327,8 @@ for (const scenario of [
         console.error = originalLogger;
         await new Promise<void>((resolve) => server.close(() => resolve()));
         if (userId) await db.user.delete({ where: { id: userId } });
+        if (storageKey)
+          await db.storageDeletion.deleteMany({ where: { storageKey } });
         await db.$disconnect();
         for (const [key, value] of Object.entries(saved)) {
           if (value === undefined) delete process.env[key];

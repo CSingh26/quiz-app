@@ -50,6 +50,14 @@ test("account deletion removes stored files and deletion outbox retries failed s
     });
     await deleteAccount(user.id, user.passwordHash);
     assert.equal(await db.user.findUnique({ where: { id: user.id } }), null);
+    assert.equal(
+      (await localStorage.read(key)).toString(),
+      "private test content",
+    );
+    assert.ok(
+      await db.storageDeletion.findUnique({ where: { storageKey: key } }),
+    );
+    await drainStorageDeletions();
     await assert.rejects(localStorage.read(key));
     const pending = await db.storageDeletion.create({
       data: { storageKey: queuedKey },

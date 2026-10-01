@@ -1,6 +1,5 @@
 import { db } from "./db";
 import { AppError } from "./errors";
-import { drainStorageDeletions } from "./storage-cleanup";
 
 export async function deleteAccount(
   userId: string,
@@ -33,6 +32,5 @@ export async function deleteAccount(
     });
     await tx.user.delete({ where: { id: userId } });
   });
-  // Outbox survives a crash or temporary object-storage failure; worker retries.
-  await drainStorageDeletions();
+  // The worker drains the durable outbox; account deletion never waits on storage.
 }

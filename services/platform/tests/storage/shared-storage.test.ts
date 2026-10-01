@@ -142,6 +142,12 @@ test(
       await assert.rejects(readdir(path.join(root, "api-local")));
       await assert.rejects(readdir(path.join(root, "worker-local")));
       await api.deleteMaterial(user.id, material.id);
+      assert.ok(
+        await db.storageDeletion.findUnique({
+          where: { storageKey: material.storageKey },
+        }),
+      );
+      await drainStorageDeletions();
       await assert.rejects(storage.read(material.storageKey));
 
       const retryKey = await storage.put(Buffer.from("deletion retry fixture"));
@@ -178,6 +184,12 @@ test(
       ).storageKey;
       keys.push(secondKey);
       await deleteAccount(user.id, "not-a-login-credential");
+      assert.ok(
+        await db.storageDeletion.findUnique({
+          where: { storageKey: secondKey },
+        }),
+      );
+      await drainStorageDeletions();
       await assert.rejects(storage.read(secondKey));
       assert.equal(await db.user.findUnique({ where: { id: user.id } }), null);
     } finally {
