@@ -8,10 +8,20 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test": "tsx --test tests/unit/*.test.ts",
+    "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "worker": "tsx src/server/jobs/run.ts",
+    "dev:platform": "next dev -H 127.0.0.1 -p 3018",
+    "format:check": "prettier --check src/server src/domain src/components/study src/app/study src/app/api/v2 src/app/layout.tsx src/app/page.tsx src/app/globals.css src/lib/platform-api.ts tests/unit tests/integration tests/e2e tests/smoke",
+    "format": "prettier --write src/server src/domain src/components/study src/app/study src/app/api/v2 src/app/layout.tsx src/app/page.tsx src/app/globals.css src/lib/platform-api.ts tests/unit tests/integration tests/e2e tests/smoke",
+    "test:local": "node tests/smoke/local.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@prisma/client": "6.19.3",
     "@radix-ui/react-form": "^0.1.0",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
@@ -19,9 +29,12 @@
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
+    "fast-xml-parser": "5.11.2",
     "framer-motion": "^11.14.4",
     "lucide-react": "^0.468.0",
     "next": "15.5.25",
+    "nodemailer": "10.0.13",
+    "pdfjs-dist": "6.3.289",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.54.0",
@@ -29,22 +42,30 @@
     "react-toastify": "^10.0.6",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "yauzl": "3.4.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@types/node": "^20",
+    "@types/nodemailer": "8.0.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/yauzl": "3.4.0",
     "eslint": "^8",
     "eslint-config-next": "15.5.25",
     "postcss": "8.5.28",
+    "prettier": "3.9.9",
+    "prisma": "6.19.3",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
-    "@playwright/test": "1.63.0"
+    "tsx": "4.23.15",
+    "typescript": "^5"
   },
   "overrides": {
     "postcss": "8.5.28",
     "sharp": "0.35.4",
-    "brace-expansion@^1.1.7": "1.1.18"
+    "brace-expansion@^1.1.7": "1.1.21",
+    "brace-expansion@^2.0.1": "2.1.7",
+    "deepmerge-ts": "8.0.0"
   }
 }

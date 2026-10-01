@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PLATFORM_DATABASE_URL")
+}
+
+// Durable cleanup outbox intentionally survives account/material deletion.
+model StorageDeletion {
+  id         String   @id @default(cuid())
+  storageKey String   @unique
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  attempts   Int      @default(0)
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  name               String
+  email              String              @unique
+  passwordHash       String
+  role               Role                @default(STUDENT)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
+  emailVerifiedAt    DateTime?           @db.Timestamptz(3)
+  sessions           Session[]
+  quizzes            Quiz[]
+  attempts           Attempt[]
+  courses            Course[]
+  memberships        CourseMembership[]
+  materials          StudyMaterial[]
+  jobs               AIJob[]
+  auditLogs          AuditLog[]
+  verificationTokens VerificationToken[]
+  banks              QuestionBank[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Quiz {
+  id          String        @id @default(cuid())
+  ownerId     String
+  title       String
+  description String        @default("")
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(3)
+  deletedAt   DateTime?     @db.Timestamptz(3)
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  versions    QuizVersion[]
+  attempts    Attempt[]
+  assignments Assignment[]
+  jobs        AIJob[]
+
+  @@index([ownerId, deletedAt])
+}
+
+model QuizVersion {
+  id          String       @id @default(cuid())
+  quizId      String
+  number      Int
+  questions   Json
+  settings    Json
+  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
+  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  attempts    Attempt[]
+  assignments Assignment[]
+
+  @@unique([quizId, number])
+}
+
+model QuestionBank {
+  id          String        @id @default(cuid())
+  ownerId     String
+  name        String
+  description String        @default("")
+  folder      String        @default("")
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(3)
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  versions    BankVersion[]
+
+  @@index([ownerId, folder])
+}
+
+model BankVersion {
+  id        String       @id @default(cuid())
+  bankId    String
+  number    Int
+  questions Json
+  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+  bank      QuestionBank @relation(fields: [bankId], references: [id], onDelete: Cascade)
+
+  @@unique([bankId, number])
+}
+
+model Attempt {
+  id                   String           @id @default(cuid())
+  userId               String
+  quizId               String
+  versionId            String
+  assignmentId         String?
+  status               String           @default("in_progress")
+  snapshot             Json
+  answers              Json             @default("{}")
+  flagged              Json             @default("[]")
+  revision             Int              @default(0)
+  currentQuestionIndex Int              @default(0)
+  score                Float?
+  maxScore             Float
+  startedAt            DateTime         @default(now()) @db.Timestamptz(3)
+  expiresAt            DateTime?        @db.Timestamptz(3)
+  submittedAt          DateTime?        @db.Timestamptz(3)
+  grade                Json?
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz                 Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  version              QuizVersion      @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  assignment           Assignment?      @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  events               IntegrityEvent[]
+
+  @@index([userId, startedAt])
+  @@index([assignmentId, userId])
+  @@index([quizId, userId, status])
+  @@index([status, expiresAt])
+}
+
+model Course {
+  id          String             @id @default(cuid())
+  ownerId     String
+  name        String
+  description String             @default("")
+  code        String             @unique
+  createdAt   DateTime           @default(now()) @db.Timestamptz(3)
+  owner       User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members     CourseMembership[]
+  assignments Assignment[]
+
+  @@index([ownerId])
+}
+
+model CourseMembership {
+  id       String @id @default(cuid())
+  courseId String
+  userId   String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@index([userId])
+}
+
+model Assignment {
+  id                String      @id @default(cuid())
+  courseId          String
+  quizId            String
+  versionId         String
+  title             String
+  startsAt          DateTime    @db.Timestamptz(3)
+  endsAt            DateTime    @db.Timestamptz(3)
+  durationMinutes   Int
+  attemptLimit      Int
+  accessCodeHash    String?
+  allowBacktracking Boolean     @default(true)
+  integrityEnabled  Boolean     @default(false)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(3)
+  course            Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quiz              Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  version           QuizVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  attempts          Attempt[]
+
+  @@index([courseId, startsAt])
+  @@index([quizId])
+}
+
+model IntegrityEvent {
+  id        String   @id @default(cuid())
+  attemptId String
+  type      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  attempt   Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+}
+
+model StudyMaterial {
+  id         String          @id @default(cuid())
+  ownerId    String
+  name       String
+  type       String
+  size       Int
+  storageKey String
+  status     String          @default("queued")
+  error      String?
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+  owner      User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  chunks     MaterialChunk[]
+
+  @@index([ownerId, createdAt])
+}
+
+model MaterialChunk {
+  id         String        @id @default(cuid())
+  materialId String
+  text       String
+  label      String
+  position   Int
+  material   StudyMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([materialId, position])
+}
+
+model AIJob {
+  id           String    @id @default(cuid())
+  ownerId      String
+  kind         String
+  status       String    @default("queued")
+  payload      Json
+  progress     Int       @default(0)
+  attempts     Int       @default(0)
+  lockedAt     DateTime? @db.Timestamptz(3)
+  error        String?
+  resultQuizId String?
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
+  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  resultQuiz   Quiz?     @relation(fields: [resultQuizId], references: [id], onDelete: SetNull)
+
+  @@index([status, lockedAt, createdAt])
+  @@index([ownerId, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resourceId String
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+model RateLimit {
+  id      String   @id
+  count   Int
+  resetAt DateTime @db.Timestamptz(3)
+
+  @@index([resetAt])
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  type      String
+  expiresAt DateTime @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}

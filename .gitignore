@@ -8,3 +8,6 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 .DS_Store
+.quizbee-private/
+.impeccable/review/
+.superpowers/

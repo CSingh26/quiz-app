@@ -1,0 +1,634 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-30T17:38:23.816923+00:00",
+  "title": "Design System: QuizBee",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0082 91.48)",
+          "oklch(26% 0.0082 91.48)",
+          "oklch(38% 0.0082 91.48)",
+          "oklch(49% 0.0082 91.48)",
+          "oklch(61% 0.0082 91.48)",
+          "oklch(72% 0.0082 91.48)",
+          "oklch(84% 0.0082 91.48)",
+          "oklch(95% 0.0082 91.48)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0041 91.45)",
+          "oklch(26% 0.0041 91.45)",
+          "oklch(38% 0.0041 91.45)",
+          "oklch(49% 0.0041 91.45)",
+          "oklch(61% 0.0041 91.45)",
+          "oklch(72% 0.0041 91.45)",
+          "oklch(84% 0.0041 91.45)",
+          "oklch(95% 0.0041 91.45)"
+        ]
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0124 91.52)",
+          "oklch(26% 0.0124 91.52)",
+          "oklch(38% 0.0124 91.52)",
+          "oklch(49% 0.0124 91.52)",
+          "oklch(61% 0.0124 91.52)",
+          "oklch(72% 0.0124 91.52)",
+          "oklch(84% 0.0124 91.52)",
+          "oklch(95% 0.0124 91.52)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0155 129.12)",
+          "oklch(26% 0.0155 129.12)",
+          "oklch(38% 0.0155 129.12)",
+          "oklch(49% 0.0155 129.12)",
+          "oklch(61% 0.0155 129.12)",
+          "oklch(72% 0.0155 129.12)",
+          "oklch(84% 0.0155 129.12)",
+          "oklch(95% 0.0155 129.12)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0195 125.59)",
+          "oklch(26% 0.0195 125.59)",
+          "oklch(38% 0.0195 125.59)",
+          "oklch(49% 0.0195 125.59)",
+          "oklch(61% 0.0195 125.59)",
+          "oklch(72% 0.0195 125.59)",
+          "oklch(84% 0.0195 125.59)",
+          "oklch(95% 0.0195 125.59)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.0162 110.59)",
+          "oklch(26% 0.0162 110.59)",
+          "oklch(38% 0.0162 110.59)",
+          "oklch(49% 0.0162 110.59)",
+          "oklch(61% 0.0162 110.59)",
+          "oklch(72% 0.0162 110.59)",
+          "oklch(84% 0.0162 110.59)",
+          "oklch(95% 0.0162 110.59)"
+        ]
+      },
+      "honey": {
+        "role": "primary",
+        "displayName": "Honey",
+        "tonalRamp": [
+          "oklch(15% 0.1397 85.04)",
+          "oklch(26% 0.1397 85.04)",
+          "oklch(38% 0.1397 85.04)",
+          "oklch(49% 0.1397 85.04)",
+          "oklch(61% 0.1397 85.04)",
+          "oklch(72% 0.1397 85.04)",
+          "oklch(84% 0.1397 85.04)",
+          "oklch(95% 0.1397 85.04)"
+        ]
+      },
+      "honey-hover": {
+        "role": "primary",
+        "displayName": "Honey Hover",
+        "tonalRamp": [
+          "oklch(15% 0.1415 83.45)",
+          "oklch(26% 0.1415 83.45)",
+          "oklch(38% 0.1415 83.45)",
+          "oklch(49% 0.1415 83.45)",
+          "oklch(61% 0.1415 83.45)",
+          "oklch(72% 0.1415 83.45)",
+          "oklch(84% 0.1415 83.45)",
+          "oklch(95% 0.1415 83.45)"
+        ]
+      },
+      "honey-soft": {
+        "role": "primary",
+        "displayName": "Honey Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0451 90.40)",
+          "oklch(26% 0.0451 90.40)",
+          "oklch(38% 0.0451 90.40)",
+          "oklch(49% 0.0451 90.40)",
+          "oklch(61% 0.0451 90.40)",
+          "oklch(72% 0.0451 90.40)",
+          "oklch(84% 0.0451 90.40)",
+          "oklch(95% 0.0451 90.40)"
+        ]
+      },
+      "green": {
+        "role": "secondary",
+        "displayName": "Green",
+        "tonalRamp": [
+          "oklch(15% 0.0467 138.28)",
+          "oklch(26% 0.0467 138.28)",
+          "oklch(38% 0.0467 138.28)",
+          "oklch(49% 0.0467 138.28)",
+          "oklch(61% 0.0467 138.28)",
+          "oklch(72% 0.0467 138.28)",
+          "oklch(84% 0.0467 138.28)",
+          "oklch(95% 0.0467 138.28)"
+        ]
+      },
+      "green-soft": {
+        "role": "secondary",
+        "displayName": "Green Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0156 126.83)",
+          "oklch(26% 0.0156 126.83)",
+          "oklch(38% 0.0156 126.83)",
+          "oklch(49% 0.0156 126.83)",
+          "oklch(61% 0.0156 126.83)",
+          "oklch(72% 0.0156 126.83)",
+          "oklch(84% 0.0156 126.83)",
+          "oklch(95% 0.0156 126.83)"
+        ]
+      },
+      "red": {
+        "role": "semantic",
+        "displayName": "Red",
+        "tonalRamp": [
+          "oklch(15% 0.1310 26.16)",
+          "oklch(26% 0.1310 26.16)",
+          "oklch(38% 0.1310 26.16)",
+          "oklch(49% 0.1310 26.16)",
+          "oklch(61% 0.1310 26.16)",
+          "oklch(72% 0.1310 26.16)",
+          "oklch(84% 0.1310 26.16)",
+          "oklch(95% 0.1310 26.16)"
+        ]
+      },
+      "red-soft": {
+        "role": "semantic",
+        "displayName": "Red Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0219 35.12)",
+          "oklch(26% 0.0219 35.12)",
+          "oklch(38% 0.0219 35.12)",
+          "oklch(49% 0.0219 35.12)",
+          "oklch(61% 0.0219 35.12)",
+          "oklch(72% 0.0219 35.12)",
+          "oklch(84% 0.0219 35.12)",
+          "oklch(95% 0.0219 35.12)"
+        ]
+      },
+      "focus": {
+        "role": "semantic",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(15% 0.0922 81.96)",
+          "oklch(26% 0.0922 81.96)",
+          "oklch(38% 0.0922 81.96)",
+          "oklch(49% 0.0922 81.96)",
+          "oklch(61% 0.0922 81.96)",
+          "oklch(72% 0.0922 81.96)",
+          "oklch(84% 0.0922 81.96)",
+          "oklch(95% 0.0922 81.96)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Sidebar",
+        "tonalRamp": [
+          "oklch(15% 0.0109 95.17)",
+          "oklch(26% 0.0109 95.17)",
+          "oklch(38% 0.0109 95.17)",
+          "oklch(49% 0.0109 95.17)",
+          "oklch(61% 0.0109 95.17)",
+          "oklch(72% 0.0109 95.17)",
+          "oklch(84% 0.0109 95.17)",
+          "oklch(95% 0.0109 95.17)"
+        ]
+      },
+      "dark-paper": {
+        "role": "neutral",
+        "displayName": "Dark Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0105 151.33)",
+          "oklch(26% 0.0105 151.33)",
+          "oklch(38% 0.0105 151.33)",
+          "oklch(49% 0.0105 151.33)",
+          "oklch(61% 0.0105 151.33)",
+          "oklch(72% 0.0105 151.33)",
+          "oklch(84% 0.0105 151.33)",
+          "oklch(95% 0.0105 151.33)"
+        ]
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Dark Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0138 145.19)",
+          "oklch(26% 0.0138 145.19)",
+          "oklch(38% 0.0138 145.19)",
+          "oklch(49% 0.0138 145.19)",
+          "oklch(61% 0.0138 145.19)",
+          "oklch(72% 0.0138 145.19)",
+          "oklch(84% 0.0138 145.19)",
+          "oklch(95% 0.0138 145.19)"
+        ]
+      },
+      "dark-soft": {
+        "role": "neutral",
+        "displayName": "Dark Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0170 141.68)",
+          "oklch(26% 0.0170 141.68)",
+          "oklch(38% 0.0170 141.68)",
+          "oklch(49% 0.0170 141.68)",
+          "oklch(61% 0.0170 141.68)",
+          "oklch(72% 0.0170 141.68)",
+          "oklch(84% 0.0170 141.68)",
+          "oklch(95% 0.0170 141.68)"
+        ]
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Dark Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0133 102.02)",
+          "oklch(26% 0.0133 102.02)",
+          "oklch(38% 0.0133 102.02)",
+          "oklch(49% 0.0133 102.02)",
+          "oklch(61% 0.0133 102.02)",
+          "oklch(72% 0.0133 102.02)",
+          "oklch(84% 0.0133 102.02)",
+          "oklch(95% 0.0133 102.02)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Dark Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0239 128.80)",
+          "oklch(26% 0.0239 128.80)",
+          "oklch(38% 0.0239 128.80)",
+          "oklch(49% 0.0239 128.80)",
+          "oklch(61% 0.0239 128.80)",
+          "oklch(72% 0.0239 128.80)",
+          "oklch(84% 0.0239 128.80)",
+          "oklch(95% 0.0239 128.80)"
+        ]
+      },
+      "dark-line": {
+        "role": "neutral",
+        "displayName": "Dark Line",
+        "tonalRamp": [
+          "oklch(15% 0.0249 138.48)",
+          "oklch(26% 0.0249 138.48)",
+          "oklch(38% 0.0249 138.48)",
+          "oklch(49% 0.0249 138.48)",
+          "oklch(61% 0.0249 138.48)",
+          "oklch(72% 0.0249 138.48)",
+          "oklch(84% 0.0249 138.48)",
+          "oklch(95% 0.0249 138.48)"
+        ]
+      },
+      "dark-honey": {
+        "role": "primary",
+        "displayName": "Dark Honey",
+        "tonalRamp": [
+          "oklch(15% 0.1254 86.76)",
+          "oklch(26% 0.1254 86.76)",
+          "oklch(38% 0.1254 86.76)",
+          "oklch(49% 0.1254 86.76)",
+          "oklch(61% 0.1254 86.76)",
+          "oklch(72% 0.1254 86.76)",
+          "oklch(84% 0.1254 86.76)",
+          "oklch(95% 0.1254 86.76)"
+        ]
+      },
+      "dark-honey-hover": {
+        "role": "primary",
+        "displayName": "Dark Honey Hover",
+        "tonalRamp": [
+          "oklch(15% 0.1069 86.03)",
+          "oklch(26% 0.1069 86.03)",
+          "oklch(38% 0.1069 86.03)",
+          "oklch(49% 0.1069 86.03)",
+          "oklch(61% 0.1069 86.03)",
+          "oklch(72% 0.1069 86.03)",
+          "oklch(84% 0.1069 86.03)",
+          "oklch(95% 0.1069 86.03)"
+        ]
+      },
+      "dark-honey-soft": {
+        "role": "primary",
+        "displayName": "Dark Honey Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0277 89.89)",
+          "oklch(26% 0.0277 89.89)",
+          "oklch(38% 0.0277 89.89)",
+          "oklch(49% 0.0277 89.89)",
+          "oklch(61% 0.0277 89.89)",
+          "oklch(72% 0.0277 89.89)",
+          "oklch(84% 0.0277 89.89)",
+          "oklch(95% 0.0277 89.89)"
+        ]
+      },
+      "dark-green": {
+        "role": "secondary",
+        "displayName": "Dark Green",
+        "tonalRamp": [
+          "oklch(15% 0.0415 130.38)",
+          "oklch(26% 0.0415 130.38)",
+          "oklch(38% 0.0415 130.38)",
+          "oklch(49% 0.0415 130.38)",
+          "oklch(61% 0.0415 130.38)",
+          "oklch(72% 0.0415 130.38)",
+          "oklch(84% 0.0415 130.38)",
+          "oklch(95% 0.0415 130.38)"
+        ]
+      },
+      "dark-green-soft": {
+        "role": "secondary",
+        "displayName": "Dark Green Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0316 137.95)",
+          "oklch(26% 0.0316 137.95)",
+          "oklch(38% 0.0316 137.95)",
+          "oklch(49% 0.0316 137.95)",
+          "oklch(61% 0.0316 137.95)",
+          "oklch(72% 0.0316 137.95)",
+          "oklch(84% 0.0316 137.95)",
+          "oklch(95% 0.0316 137.95)"
+        ]
+      },
+      "dark-red": {
+        "role": "semantic",
+        "displayName": "Dark Red",
+        "tonalRamp": [
+          "oklch(15% 0.0886 29.34)",
+          "oklch(26% 0.0886 29.34)",
+          "oklch(38% 0.0886 29.34)",
+          "oklch(49% 0.0886 29.34)",
+          "oklch(61% 0.0886 29.34)",
+          "oklch(72% 0.0886 29.34)",
+          "oklch(84% 0.0886 29.34)",
+          "oklch(95% 0.0886 29.34)"
+        ]
+      },
+      "dark-red-soft": {
+        "role": "semantic",
+        "displayName": "Dark Red Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0335 27.77)",
+          "oklch(26% 0.0335 27.77)",
+          "oklch(38% 0.0335 27.77)",
+          "oklch(49% 0.0335 27.77)",
+          "oklch(61% 0.0335 27.77)",
+          "oklch(72% 0.0335 27.77)",
+          "oklch(84% 0.0335 27.77)",
+          "oklch(95% 0.0335 27.77)"
+        ]
+      },
+      "dark-focus": {
+        "role": "semantic",
+        "displayName": "Dark Focus",
+        "tonalRamp": [
+          "oklch(15% 0.1254 86.76)",
+          "oklch(26% 0.1254 86.76)",
+          "oklch(38% 0.1254 86.76)",
+          "oklch(49% 0.1254 86.76)",
+          "oklch(61% 0.1254 86.76)",
+          "oklch(72% 0.1254 86.76)",
+          "oklch(84% 0.1254 86.76)",
+          "oklch(95% 0.1254 86.76)"
+        ]
+      },
+      "dark-sidebar": {
+        "role": "neutral",
+        "displayName": "Dark Sidebar",
+        "tonalRamp": [
+          "oklch(15% 0.0155 141.15)",
+          "oklch(26% 0.0155 141.15)",
+          "oklch(38% 0.0155 141.15)",
+          "oklch(49% 0.0155 141.15)",
+          "oklch(61% 0.0155 141.15)",
+          "oklch(72% 0.0155 141.15)",
+          "oklch(84% 0.0155 141.15)",
+          "oklch(95% 0.0155 141.15)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Academic display",
+        "purpose": "Expressive public landing headline."
+      },
+      "headline": {
+        "displayName": "Workspace headline",
+        "purpose": "Page titles with readable supporting context."
+      },
+      "section": {
+        "displayName": "Serif section",
+        "purpose": "Task groups and question headings."
+      },
+      "title": {
+        "displayName": "Record title",
+        "purpose": "Dense useful lists and operational headings."
+      },
+      "body": {
+        "displayName": "Reading text",
+        "purpose": "Interface body and supporting content."
+      },
+      "label": {
+        "displayName": "Control label",
+        "purpose": "Form fields and named actions."
+      }
+    },
+    "shadows": [
+      {
+        "name": "paper-lift",
+        "value": "0 16px 45px #35352314",
+        "purpose": "Landing example sheet only."
+      },
+      {
+        "name": "paper-lift-dark",
+        "value": "0 16px 45px #00000026",
+        "purpose": "Dark-theme landing example sheet."
+      },
+      {
+        "name": "navigation-overlay",
+        "value": "12px 0 30px #00000020",
+        "purpose": "Open mobile sidebar overlap."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-transition",
+        "value": "background-color .16s ease, color .16s ease",
+        "purpose": "Visible control-state changes; removed for reduced motion."
+      },
+      {
+        "name": "drawer-transition",
+        "value": "transform .2s ease",
+        "purpose": "Mobile navigation reveal; removed for reduced motion."
+      },
+      {
+        "name": "loading-spin",
+        "value": "1.2s linear infinite",
+        "purpose": "Loading status accompanied by text; animation removed for reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-desktop-min",
+        "value": "1800px"
+      },
+      {
+        "name": "desktop-max",
+        "value": "1200px"
+      },
+      {
+        "name": "columns-max",
+        "value": "960px"
+      },
+      {
+        "name": "mobile-navigation-max",
+        "value": "760px"
+      },
+      {
+        "name": "compact-phone-max",
+        "value": "460px"
+      }
+    ],
+    "tonalRampNote": "Generated OKLCH reference ramps for the design panel; these are not additional application tokens."
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Honey action with dark ink lettering.",
+      "html": "<button class=\"ds-btn\">Save quiz</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 17px;border:1px solid transparent;border-radius:8px;font:650 12px/1.5 QuizBeeSans,Arial,sans-serif;cursor:pointer;transition:background-color .16s ease,color .16s ease}.ds-btn:focus-visible{outline:2px solid var(--qb-focus,#7c5c17);outline-offset:4px}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}}.ds-btn{background:var(--qb-honey,#ebba48);color:#242820}.ds-btn:hover:not(:disabled){background:var(--qb-honey-hover,#dda932)}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined supporting action on paper.",
+      "html": "<button class=\"ds-btn\">Preview quiz</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 17px;border:1px solid transparent;border-radius:8px;font:650 12px/1.5 QuizBeeSans,Arial,sans-serif;cursor:pointer;transition:background-color .16s ease,color .16s ease}.ds-btn:focus-visible{outline:2px solid var(--qb-focus,#7c5c17);outline-offset:4px}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}}.ds-btn{background:var(--qb-surface,#fffefb);color:var(--qb-ink,#242820);border-color:var(--qb-line,#d9dace)}.ds-btn:hover:not(:disabled){background:var(--qb-soft,#edeae1)}"
+    },
+    {
+      "name": "Quiet button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Low-emphasis action with a visible hover surface.",
+      "html": "<button class=\"ds-btn\">Keep working</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 17px;border:1px solid transparent;border-radius:8px;font:650 12px/1.5 QuizBeeSans,Arial,sans-serif;cursor:pointer;transition:background-color .16s ease,color .16s ease}.ds-btn:focus-visible{outline:2px solid var(--qb-focus,#7c5c17);outline-offset:4px}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}}.ds-btn{background:transparent;color:var(--qb-muted,#62675b);padding:8px 10px}.ds-btn:hover:not(:disabled){background:var(--qb-soft,#edeae1);color:var(--qb-ink,#242820)}"
+    },
+    {
+      "name": "Danger button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Explicit destructive action, reinforced by wording.",
+      "html": "<button class=\"ds-btn\">Delete permanently</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 17px;border:1px solid transparent;border-radius:8px;font:650 12px/1.5 QuizBeeSans,Arial,sans-serif;cursor:pointer;transition:background-color .16s ease,color .16s ease}.ds-btn:focus-visible{outline:2px solid var(--qb-focus,#7c5c17);outline-offset:4px}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}}.ds-btn{background:var(--qb-red-soft,#fae7e2);color:var(--qb-red,#9a3934);border-color:var(--qb-red,#9a3934)}.ds-btn:hover:not(:disabled){text-decoration:underline;text-underline-offset:3px}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Visible label, quiet surface, and clear keyboard focus.",
+      "html": "<label class=\"ds-field\"><span>Quiz title</span><input class=\"ds-input\" placeholder=\"A topic worth revisiting\" /></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:7px;font:650 12px/1.5 QuizBeeSans,Arial,sans-serif;color:var(--qb-ink,#242820)}.ds-input{min-height:44px;padding:11px 12px;border:1px solid var(--qb-line,#d9dace);border-radius:7px;background:var(--qb-surface,#fffefb);color:var(--qb-ink,#242820);font:400 13px/1.6 QuizBeeSans,Arial,sans-serif;caret-color:var(--qb-green,#42553c)}.ds-input::placeholder{color:var(--qb-muted,#62675b)}.ds-input:hover{border-color:var(--qb-muted,#62675b)}.ds-input:focus-visible{outline:2px solid var(--qb-focus,#7c5c17);outline-offset:4px}"
+    },
+    {
+      "name": "Sidebar navigation",
+      "kind": "nav",
+      "refersTo": "navigation-current",
+      "description": "Text-and-icon index with a honey current location.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Study navigation\"><a href=\"#overview\" aria-current=\"page\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z\"/><path d=\"M9 21v-9h6v9\"/></svg>Overview</a><a href=\"#quizzes\">My quizzes</a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:5px;background:var(--qb-sidebar,#efede5);padding:15px}.ds-nav a{display:flex;align-items:center;gap:12px;min-height:46px;padding:11px 14px;border-radius:7px;font:550 11px/1.65 QuizBeeSans,Arial,sans-serif;color:var(--qb-muted,#62675b);text-decoration:none}.ds-nav a:hover{background:var(--qb-soft,#edeae1);color:var(--qb-ink,#242820)}.ds-nav a[aria-current=page]{background:var(--qb-honey-soft,#f6eac9);color:var(--qb-ink,#242820);font-weight:680}.ds-nav a:focus-visible{outline:2px solid var(--qb-focus,#7c5c17);outline-offset:4px}"
+    },
+    {
+      "name": "Status tag",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Compact descriptive state, with green success variant.",
+      "html": "<span class=\"ds-tag\">Practice</span> <span class=\"ds-tag ds-tag-success\">Ready</span>",
+      "css": ".ds-tag{display:inline-flex;align-items:center;min-height:25px;padding:3px 9px;border-radius:5px;font:600 10px/1.5 QuizBeeSans,Arial,sans-serif;color:var(--qb-muted,#62675b);background:var(--qb-soft,#edeae1)}.ds-tag-success{color:var(--qb-green,#42553c);background:var(--qb-green-soft,#e5eadf)}"
+    },
+    {
+      "name": "Question sheet",
+      "kind": "card",
+      "refersTo": "question-surface",
+      "description": "A focused reading surface, outlined rather than elevated.",
+      "html": "<article class=\"ds-question\"><div class=\"ds-meta\">Question 1 of 3 \u00b7 1 point</div><h2>What would you like to understand?</h2><p>Give the question room to be read.</p></article>",
+      "css": ".ds-question{background:var(--qb-surface,#fffefb);color:var(--qb-ink,#242820);border:1px solid var(--qb-line,#d9dace);border-radius:12px;padding:30px}.ds-meta{font:400 11px/1.65 QuizBeeSans,Arial,sans-serif;color:var(--qb-muted,#62675b)}.ds-question h2{font:400 30px/1.45 QuizBeeSerif,Georgia,serif;letter-spacing:-.015em;margin:26px 0 25px}.ds-question p{font:400 13px/1.65 QuizBeeSans,Arial,sans-serif;color:var(--qb-muted,#62675b)}"
+    },
+    {
+      "name": "Selected answer",
+      "kind": "custom",
+      "description": "A native radio inside a visibly selected answer row.",
+      "html": "<label class=\"ds-answer\"><input type=\"radio\" checked name=\"example-answer\"/><span class=\"ds-letter\">B</span><span>Recall it in your own words</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"m20 6-11 11-5-5\"/></svg></label>",
+      "css": ".ds-answer{position:relative;display:flex;align-items:center;gap:14px;padding:17px 18px;border:1px solid var(--qb-green,#42553c);border-radius:8px;min-height:61px;background:var(--qb-green-soft,#e5eadf);color:var(--qb-green,#42553c);font:400 13px/1.65 QuizBeeSans,Arial,sans-serif;cursor:pointer}.ds-answer input{position:absolute;opacity:0}.ds-answer:has(input:focus-visible){outline:2px solid var(--qb-focus,#7c5c17);outline-offset:3px}.ds-letter{display:grid;place-items:center;width:27px;height:27px;border:1px solid var(--qb-line,#d9dace);border-radius:5px;font-size:11px;flex-shrink:0}.ds-answer>svg{margin-left:auto}.ds-answer:hover{filter:brightness(.98)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Academic Field Guide",
+    "overview": "QuizBee treats studying as a thoughtful, ongoing practice. Warm paper, dark ink, honey actions, and muted green annotations establish an academic workspace that is welcoming without becoming childish. Generous serif headings introduce dense, useful lists and quiet controls.\n\nThe implemented world uses index-like navigation, compact version records, source passages, and a single-question study surface. The landing page is more expressive; task screens put readable questions and reliable state ahead of decoration. Light, dark, and system themes share the same hierarchy.",
+    "keyCharacteristics": [
+      "Warm paper and ink with restrained honey actions.",
+      "Local serif headlines paired with a clear sans-serif interface.",
+      "Useful rows and visible revision records instead of a uniform card grid.",
+      "Quiet task surfaces with explicit loading, saved, empty, error, and pending-review states.",
+      "A small geometric hexagon-and-bee mark, not a character illustration."
+    ],
+    "rules": [
+      {
+        "name": "The Action Color Rule",
+        "body": "Honey identifies a next action or current location. It does not imply a score, an award, or activity that the application has not measured.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Serif type introduces ideas and questions; sans-serif type explains actions, state, and records. Do not introduce a third display face.",
+        "section": "typography"
+      },
+      {
+        "name": "The Reading Space Rule",
+        "body": "Collapse secondary columns before shrinking the question, field, or source text into the remaining space.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Workspace Rule",
+        "body": "Use a border or a tonal surface for ordinary working content. Preserve elevated treatment for the few surfaces that visibly overlap another surface.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep the academic field-guide character: warm paper, ink, compact records, and generous serif headings.",
+      "**Do** use the shared semantic colors so light and dark themes preserve the same hierarchy.",
+      "**Do** use rows for comparable records and a dedicated sheet for a focused question or form.",
+      "**Do** show real loading, error, empty, saved, and pending-review states in the same visual system.",
+      "**Do** retain native controls, descriptive labels, visible focus, and an accessible alternative to dragging.",
+      "**Do** label illustrative landing content as an example and derive progress from actual records."
+    ],
+    "donts": [
+      "**Don't** add blue/pink legacy styling to new study routes or silently restyle legacy routes through global selectors.",
+      "**Don't** replace useful collections with a uniform grid of decorative cards.",
+      "**Don't** use exaggerated gradients, glass effects, cartoon mascots, or invented activity to make the workspace feel busy.",
+      "**Don't** turn every section into a promotional hero or add a kicker above its heading.",
+      "**Don't** use color alone to communicate answer selection, a failure, or a destructive action.",
+      "**Don't** hide missing provider configuration or imply that browser integrity signals prove misconduct."
+    ]
+  }
+}

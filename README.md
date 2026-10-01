@@ -1,64 +1,72 @@
-# QuizBee
+# QuizBee 2.0
 
-A quiz platform for studying how reliable software preserves the meaning of an assessment—from a teacher's question file to a student's recorded score.
+QuizBee is a local study and assessment platform with private quizzes, versioned question banks, document ingestion, resumable attempts, and instructor courses. Grades and deadlines are enforced by the server. Written responses remain pending until an instructor or an authorized practice self-review supplies a grade.
 
-## The engineering question
+The new application uses Next.js, TypeScript, Prisma and PostgreSQL. Its API is `/api/v2`, and its workspace is `/study`. The original Express/MongoDB application remains in `backend/` with its existing dashboard routes; it uses a separate database and authentication system.
 
-Can a system keep quiz content, room timing, authorization and grading consistent when requests are malformed, repeated or late?
+## What works
 
-QuizBee keeps its original identity as a computer-science project. Instructors import question modules and schedule rooms; students answer questions and inspect ranked results. The useful engineering work is in the boundaries: a score must come from the assigned module, an expired room must reject submissions even before the cleanup job runs, and a failed database write must not leave a contradictory leaderboard.
+- Register your own student or instructor account, sign in, manage sessions, and request account email through configured SMTP.
+- Create private quizzes, keep immutable versions, and maintain private banks with folders, question metadata and random practice sampling.
+- Take nine question types with saved answers, stable question order, server deadlines, revision conflict checks and idempotent submission. Review results and create a practice quiz from mistakes.
+- Create courses, join by code, assign a fixed quiz version, set attempt limits and optional access codes, review grades, and export results as CSV.
+- Upload PDF, DOCX, TXT, Markdown, CSV, XLSX, PPTX or ZIP materials for background extraction into traceable source chunks.
+- Request source-cited quiz generation when an OpenAI-compatible provider is configured. Without provider settings, generation is explicitly unavailable; there are no simulated generated quizzes.
 
-## What the system enforces
+This delivery is for local testing. It has not been deployed or certified for production, proctoring, regulatory compliance, or high-stakes examinations. [Current limits](docs/LIMITATIONS.md) distinguish working features from extensions.
 
-- Instructor-only module import/deletion and room creation/activation, with authorization before upload parsing.
-- Complete JSON question validation before one atomic nested module write; malformed later questions cannot leave a partial module.
-- Server-side grading against the room's module and legitimate option text. Omitted questions score zero; invented question IDs and options are rejected.
-- Request-time start/end checks independent of the minute-based scheduler.
-- Atomic attempt/leaderboard persistence. Linked modules cannot be deleted; unlinked question/options/module deletion is transactional.
-- HttpOnly session cookies with HTTPS in production and usable local development behavior. Uploads are capped at 5 MB.
+## Run the new platform locally
 
-Repeated attempts retain the existing policy: each attempt is stored and the latest score updates the leaderboard. This is documented behavior, not an exam-integrity guarantee.
+Use Docker Compose and Node.js 24; PDF extraction requires at least Node.js 22.13. From the repository root:
 
-![Quiz workflow with an explicitly labeled test fixture](docs/screenshots/quiz-fixture.png)
+```sh
+docker compose up -d
+cp frontend/.env.example frontend/.env
+cd frontend
+npm ci
+npm run db:generate
+npm run db:migrate
+npm run dev:platform
+```
 
-## Architecture
+Open [QuizBee](http://localhost:3018) and register your own account. No demo user or administrator password is supplied. Keep `APP_ORIGIN=http://localhost:3018` aligned with the hostname and port you actually open; `localhost` and `127.0.0.1` are different origins.
 
-Next.js interface → Express routes and role gates → pure validation/grading domain → Prisma → MongoDB replica set. S3 is optional for profile images. A scheduled job moves rooms between scheduled, active and past states; request-time validation remains authoritative for submission acceptance.
+In a second terminal:
 
-[Architecture](docs/ARCHITECTURE.md) · [Methodology and invariants](docs/METHODOLOGY.md) · [Limitations](docs/LIMITATIONS.md)
+```sh
+cd frontend
+NODE_ENV=development npm run worker
+```
 
-## Run locally
+The worker processes files and generation jobs, expires abandoned timed attempts, retries file deletion, and prunes expired sessions and tokens. The example configuration explicitly permits **unscanned local development uploads**. Production refuses that bypass and requires a configured scanner. Keep web and worker processes pointed at the same database and private storage directory.
 
-Use Node 22 or 24 and a MongoDB replica set. Copy each `.env.example` to `.env` in the same directory, fill the local settings and keep those files untracked. Generate an instructor bcrypt password hash locally with `bcryptjs`; `ADMIN_PWD` stores the hash. Frontend and API should share a site in production.
+Compose starts PostgreSQL on loopback port 55439 and Mailpit SMTP on 1025. Inspect local verification/reset messages at [Mailpit](http://localhost:8025). AI credentials are empty by default. Setup, configuration and service limitations are detailed in [the operator guide](docs/DEPLOYMENT.md).
+
+## Verification and design
+
+```sh
+npm test --prefix frontend
+npm run typecheck --prefix frontend
+npm run lint --prefix frontend
+npm run build --prefix frontend
+```
+
+Database and browser tests have additional isolated-service requirements; use [TESTING.md](docs/TESTING.md) for the current commands and evidence. Tests use clearly labeled fixtures; external AI and malware services are not assumed to have been exercised.
+
+[Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [AI pipeline](docs/AI_PIPELINE.md) · [Document processing](docs/DOCUMENT_PROCESSING.md) · [Assessment integrity](docs/ASSESSMENT_INTEGRITY.md) · [Privacy](docs/PRIVACY.md) · [Security](SECURITY.md)
+
+## Run the preserved legacy application
+
+Legacy routes are `/login/student`, `/login/instructor`, `/register`, `/dashboard/student` and `/dashboard/instructor`. They call the Express service through `NEXT_PUBLIC_API_BASE_URL`, whose trailing slash is required. This setting does not configure the new `/api/v2` API.
+
+Use a separate MongoDB replica set, copy `backend/.env.example` to `backend/.env`, and fill local settings. Generate an instructor bcrypt hash for `ADMIN_PWD`; do not enter a plaintext password there. S3 configuration is optional and used only for legacy profile images.
 
 ```sh
 npm ci --prefix backend
-npm ci --prefix frontend
 cd backend
 npm run build
 npx prisma db push
 npm run dev
 ```
 
-In a second terminal, run `npm run dev --prefix frontend`. Open `http://localhost:3000`. The API defaults to port 3876. Frontend API configuration is embedded at build time and requires its trailing slash.
-
-For a disposable local MongoDB replica set, run the documented [integration setup](docs/TESTING.md). S3 credentials are necessary only for image upload; no credentials are bundled.
-
-## Verification
-
-```sh
-npm run test --prefix backend
-npm run lint --prefix backend
-npm run lint --prefix frontend
-npm run typecheck --prefix frontend
-npm run build --prefix frontend
-npm run test:e2e --prefix frontend
-```
-
-Sixteen domain/controller/authorization/session tests, one real MongoDB persistence test and four desktop/mobile browser tests cover this delivery. The database test verifies rollback after an injected leaderboard failure and protects linked module content. Browser fixtures are explicitly synthetic; no real student records or provider uploads are used.
-
-CI installs locked dependencies, generates Prisma, lints, typechecks, tests against MongoDB, builds, runs browser journeys, audits production dependencies and scans tracked text for common secret patterns. See [testing](docs/TESTING.md) and the [delivery report](docs/PORTFOLIO_DELIVERY.md) for exact evidence.
-
-## Further engineering work
-
-Assessment-attempt policy, distributed room scheduling, production rate limits, audit logs, accessibility and multiple instructor organizations are worthwhile extensions. This release does not claim proctoring, anti-cheating guarantees or production load validation.
+The legacy API defaults to port 3876. In another terminal, run `npm run dev --prefix frontend` and open a legacy route at [localhost:3000](http://localhost:3000/login/student). Set `APP_ORIGIN` to the port you use if also testing the new workspace there. MongoDB setup and legacy checks remain in [TESTING.md](docs/TESTING.md). No automatic data or credential migration connects the two applications.

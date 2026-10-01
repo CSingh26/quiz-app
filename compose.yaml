@@ -1,0 +1,26 @@
+name: quizbee-local
+services:
+  postgres:
+    container_name: quizbee-v2-postgres
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:55439:5432"
+    environment:
+      POSTGRES_USER: quizbee
+      POSTGRES_PASSWORD: quizbee_local_only
+      POSTGRES_DB: quizbee_v2
+    volumes:
+      - quizbee-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quizbee -d quizbee_v2"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  mail:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+volumes:
+  quizbee-data:
+    name: quizbee-v2-data
