@@ -1,0 +1,22 @@
+{
+  "name": "quizbee",
+  "version": "2.0.0-rc.1",
+  "private": true,
+  "description": "Distributed study and assessment platform with independent web, API and workers",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "setup": "npm ci --prefix frontend && npm ci --prefix services/platform && npm ci --prefix backend",
+    "local:up": "docker compose -f compose.yaml -f compose.distributed.yaml up -d --build --wait",
+    "local:stop": "docker compose -f compose.yaml -f compose.distributed.yaml stop",
+    "local:status": "docker compose -f compose.yaml -f compose.distributed.yaml ps",
+    "test": "npm test --prefix frontend && npm test --prefix services/platform && npm test --prefix backend",
+    "test:integration": "npm run test:integration --prefix services/platform",
+    "test:local": "node frontend/tests/smoke/local.mjs",
+    "typecheck": "npm run typecheck --prefix frontend && npm run typecheck --prefix services/platform",
+    "build": "npm run build --prefix frontend",
+    "format:check": "npm run format:check --prefix frontend && npm run format:check --prefix services/platform"
+  }
+}

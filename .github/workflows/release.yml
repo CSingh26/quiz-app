@@ -1,0 +1,207 @@
+name: Release images
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
+      namespace: ${{ steps.release.outputs.namespace }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Validate release tag and reviewed notes
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          tag = os.environ["RELEASE_TAG"]
+          if not re.fullmatch(r"v\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?", tag):
+              raise SystemExit("Release tags must be vMAJOR.MINOR.PATCH with an optional prerelease suffix.")
+          if not pathlib.Path(f"docs/releases/{tag}.md").is_file():
+              raise SystemExit("Add reviewed release notes for this exact tag before publishing.")
+          version = tag[1:]
+          if pathlib.Path("VERSION").read_text().strip() != version:
+              raise SystemExit("VERSION does not match the release tag.")
+          for manifest in ("package.json", "frontend/package.json", "services/platform/package.json"):
+              if json.loads(pathlib.Path(manifest).read_text()).get("version") != version:
+                  raise SystemExit(f"Package version does not match the release tag: {manifest}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"version={version}\n")
+              output.write(f"prerelease={str('-' in tag).lower()}\n")
+              output.write(f"namespace=ghcr.io/{os.environ['OWNER'].lower()}\n")
+          PY
+
+  images:
+    needs: [quality, prepare]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: web
+            file: docker/web.Dockerfile
+            target: web
+          - image: api
+            file: docker/platform.Dockerfile
+            target: api
+          - image: worker
+            file: docker/platform.Dockerfile
+            target: worker
+          - image: legacy
+            file: docker/legacy.Dockerfile
+            target: legacy
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Set up ARM emulation
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1
+        with:
+          platforms: arm64
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
+      - name: Sign in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute image tags
+        id: tags
+        env:
+          IMAGE: ${{ needs.prepare.outputs.namespace }}/quizbee-${{ matrix.image }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          REVISION: ${{ github.sha }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+        run: |
+          python3 - <<'PY'
+          import os
+          image = os.environ["IMAGE"]
+          tags = [f"{image}:{os.environ['VERSION']}", f"{image}:sha-{os.environ['REVISION']}"]
+          if os.environ["PRERELEASE"] == "false":
+              tags.append(f"{image}:latest")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write("tags<<IMAGE_TAGS\n" + "\n".join(tags) + "\nIMAGE_TAGS\n")
+          PY
+      - name: Build and publish ${{ matrix.image }}
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          target: ${{ matrix.target }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          build-args: |
+            VERSION=${{ needs.prepare.outputs.version }}
+            REVISION=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          sbom: true
+          provenance: mode=max
+          cache-from: type=gha,scope=release-${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=release-${{ matrix.image }}
+      - name: Record immutable image digest
+        env:
+          COMPONENT: ${{ matrix.image }}
+          IMAGE: ${{ needs.prepare.outputs.namespace }}/quizbee-${{ matrix.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          REVISION: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          digest = os.environ["DIGEST"]
+          if not re.fullmatch(r"sha256:[a-f0-9]{64}", digest):
+              raise SystemExit("Build did not produce an immutable image digest.")
+          record = {key.lower(): os.environ[key] for key in ("COMPONENT", "IMAGE", "DIGEST", "VERSION", "REVISION")}
+          record["platforms"] = ["linux/amd64", "linux/arm64"]
+          pathlib.Path("digests").mkdir(exist_ok=True)
+          pathlib.Path(f"digests/{record['component']}.json").write_text(json.dumps(record, indent=2) + "\n")
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: image-digest-${{ matrix.image }}
+          path: digests/${{ matrix.image }}.json
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-release:
+    needs: [prepare, images]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: image-digest-*
+          path: digests
+          merge-multiple: true
+      - name: Verify all image records and prepare release assets
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          REVISION: ${{ github.sha }}
+          NAMESPACE: ${{ needs.prepare.outputs.namespace }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          records = []
+          for component in ("web", "api", "worker", "legacy"):
+              record = json.loads(pathlib.Path(f"digests/{component}.json").read_text())
+              expected = {"component": component, "image": f"{os.environ['NAMESPACE']}/quizbee-{component}", "version": os.environ["VERSION"], "revision": os.environ["REVISION"], "platforms": ["linux/amd64", "linux/arm64"]}
+              if any(record.get(key) != value for key, value in expected.items()) or not re.fullmatch(r"sha256:[a-f0-9]{64}", record.get("digest", "")):
+                  raise SystemExit(f"Image record does not match this release: {component}")
+              records.append(record)
+          pathlib.Path("image-digests.json").write_text(json.dumps({"version": os.environ["VERSION"], "revision": os.environ["REVISION"], "images": records}, indent=2) + "\n")
+          pathlib.Path("images.txt").write_text("\n".join(f"{record['image']}@{record['digest']}" for record in records) + "\n")
+          PY
+      - name: Publish completed release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          notes="docs/releases/${RELEASE_TAG}.md"
+          latest=true
+          if [ "$PRERELEASE" = true ]; then latest=false; fi
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" image-digests.json images.txt --clobber
+            gh release edit "$RELEASE_TAG" --draft=false --prerelease="$PRERELEASE" --latest="$latest" --title "QuizBee ${RELEASE_TAG}" --notes-file "$notes"
+          else
+            flags=()
+            if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+            gh release create "$RELEASE_TAG" image-digests.json images.txt --verify-tag --title "QuizBee ${RELEASE_TAG}" --notes-file "$notes" --latest="$latest" "${flags[@]}"
+          fi
