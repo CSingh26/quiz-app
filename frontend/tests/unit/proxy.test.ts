@@ -106,6 +106,77 @@ test("proxy preserves query, browser origin and cookies while removing spoofed a
   }
 });
 
+test("trusted ingress mode preserves distinct validated client addresses without trusting browser identity headers", async () => {
+  const received: (string | undefined)[] = [];
+  const upstream = await internalServer((incoming, response) => {
+    received.push(incoming.headers["x-forwarded-for"] as string | undefined);
+    assert.equal(incoming.headers["x-user-id"], undefined);
+    assert.equal(incoming.headers.forwarded, undefined);
+    response.end("ok");
+  });
+  const previous = process.env.TRUST_PLATFORM_PROXY;
+  try {
+    process.env.TRUST_PLATFORM_PROXY = "true";
+    for (const address of ["192.0.2.10", "192.0.2.11", "2001:0db8:0:0::1"]) {
+      const result = await proxyPlatformRequest(
+        request("auth/me", {
+          headers: {
+            "x-forwarded-for": address,
+            "x-user-id": "forged",
+            forwarded: "for=forged",
+          },
+        }),
+        { apiUrl: upstream.url },
+      );
+      assert.equal(result.status, 200);
+    }
+    assert.deepEqual(received, ["192.0.2.10", "192.0.2.11", "2001:db8::1"]);
+    for (const address of [
+      undefined,
+      "",
+      "client.example",
+      "192.0.2.10, 192.0.2.11",
+      "127.0.0.1:1234",
+      "fe80::1%eth0",
+    ]) {
+      const result = await proxyPlatformRequest(
+        request("auth/me", {
+          headers: address === undefined ? {} : { "x-forwarded-for": address },
+        }),
+        { apiUrl: upstream.url },
+      );
+      assert.equal(result.status, 400, `invalid client address: ${address}`);
+    }
+    assert.equal(
+      received.length,
+      3,
+      "invalid identities must never contact the API",
+    );
+    process.env.TRUST_PLATFORM_PROXY = "false";
+    assert.equal(
+      (
+        await proxyPlatformRequest(
+          request("auth/me", { headers: { "x-forwarded-for": "192.0.2.10" } }),
+          { apiUrl: upstream.url },
+        )
+      ).status,
+      200,
+    );
+    assert.equal(received.at(-1), undefined);
+    process.env.TRUST_PLATFORM_PROXY = "sometimes";
+    assert.equal(
+      (await proxyPlatformRequest(request("auth/me"), { apiUrl: upstream.url }))
+        .status,
+      503,
+    );
+    assert.equal(received.length, 4);
+  } finally {
+    if (previous === undefined) delete process.env.TRUST_PLATFORM_PROXY;
+    else process.env.TRUST_PLATFORM_PROXY = previous;
+    await upstream.close();
+  }
+});
+
 test("JSON mutations preserve bytes, response status and every Set-Cookie independently", async () => {
   const body = JSON.stringify({
     email: "local@example.invalid",

@@ -1,3 +1,5 @@
+import { isIP } from "node:net";
+
 /** The web tier forwards only this HTTP contract; it has no platform data access. */
 export const MAX_REQUEST_BYTES = 10 * 1024 * 1024 + 64 * 1024;
 export const MAX_RESPONSE_BYTES = 16 * 1024 * 1024;
@@ -114,6 +116,30 @@ function allowHeaders(source: Headers, names: string[]) {
   }
   return result;
 }
+function forwardTrustedClient(source: Headers, destination: Headers) {
+  const setting = process.env.TRUST_PLATFORM_PROXY;
+  if (setting === undefined || setting === "false") return;
+  if (setting !== "true") throw new Error("Invalid proxy trust configuration");
+  // Opt in only behind an ingress that overwrites this header with one peer IP.
+  // The web/API ports must not be directly reachable by untrusted clients.
+  const address = source.get("x-forwarded-for")?.trim() || "";
+  const version = isIP(address);
+  if (
+    !version ||
+    address.includes("%") ||
+    hopHeaders(source).has("x-forwarded-for")
+  )
+    throw new ProxyInputError(
+      400,
+      "INVALID_CLIENT_ADDRESS",
+      "The request did not contain a valid trusted client address.",
+    );
+  const normalized =
+    version === 6
+      ? new URL(`http://[${address}]`).hostname.slice(1, -1)
+      : address;
+  destination.set("x-forwarded-for", normalized);
+}
 async function readBounded(
   body: ReadableStream<Uint8Array> | null,
   limit: number,
@@ -186,6 +212,7 @@ export async function proxyPlatformRequest(
     request.signal.addEventListener("abort", clientAbort, { once: true });
     if (request.signal.aborted) controller.abort();
     const headers = allowHeaders(request.headers, REQUEST_HEADERS);
+    forwardTrustedClient(request.headers, headers);
     const declaredLength = request.headers.get("content-length");
     if (
       declaredLength !== null &&
