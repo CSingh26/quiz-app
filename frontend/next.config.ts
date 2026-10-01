@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  // Keep the web trace and server entry stable when the repository has its own lockfile.
+  outputFileTracingRoot: __dirname,
   async headers() {
     return [
       {

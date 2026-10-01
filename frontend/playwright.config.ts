@@ -43,6 +43,8 @@ export default defineConfig({
         APP_ORIGIN: baseURL,
         ALLOW_LOCAL_HTTP: "true",
         PLATFORM_DATABASE_URL: databaseURL,
+        STORAGE_DRIVER: "local",
+        PRIVATE_STORAGE_DIR: ".quizbee-private/e2e",
       },
     },
     {
