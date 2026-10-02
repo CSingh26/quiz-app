@@ -41,7 +41,15 @@ If that database already exists, leave it in place. Never substitute the interac
 )
 ```
 
-Integration tests reject databases outside localhost/127.0.0.1 port 55439 named `quizbee_v2_test`. They use unique synthetic identities and fixture-only cleanup. The suite runs serially because cleanup tests share an outbox. Separate process/replica cases exercise the real HTTP boundary, database clock and durable worker claims rather than method-call mocks.
+Integration tests reject databases outside localhost/127.0.0.1 port 55439 named `quizbee_v2_test`. The `test:integration` launcher validates that destination before starting the suite, pins private storage to a temporary local directory and clears external provider/mail settings. This prevents Prisma's automatic `.env` loading from routing fixtures to the interactive app's S3 storage or disabling the local AI fixture server. Temporary files are removed when the suite exits. The suite uses unique synthetic identities and runs serially because cleanup tests share an outbox. Separate process/replica cases exercise the real HTTP boundary, database clock and durable worker claims rather than method-call mocks.
+
+### Readiness outage and recovery
+
+The follow-up readiness regression checks run with the unit and integration suites above. The HTTP unit case stalls a dependency, verifies concurrent callers receive `503` within the two-second deadline (with scheduling tolerance), confirms later probes reuse the outstanding query, and verifies recovery uses a fresh check.
+
+`tests/integration/readiness-recovery.test.ts` starts separate API and worker processes against the guarded test database through a temporary loopback TCP proxy. It pauses only those processes' database traffic, verifies bounded readiness failures and independent liveness, then resumes traffic and checks recovery without restarting either process. The fixture isolates storage and clears external provider/mail configuration. It does not stop PostgreSQL or interrupt the interactive app.
+
+Local follow-up verification: 67 unit tests (38 platform, 13 proxy, 16 legacy) and 34 PostgreSQL integration tests passed. Platform typecheck, formatting and the repository text secret scan passed. API/worker images built and the local stack passed the upload, processing, private retrieval, mail and account-deletion smoke with two ingestion replicas. These changes are separate from the published `v2.0.0-rc.1` image verification above.
 
 ## Web checks and browser journeys
 

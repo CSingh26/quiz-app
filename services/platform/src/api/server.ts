@@ -6,6 +6,7 @@ import {
 import { randomUUID } from "node:crypto";
 import { AppError } from "../server/errors";
 import { errorResponse } from "../server/http";
+import { createReadinessProbe } from "../server/readiness";
 
 type Options = { ready?: () => Promise<unknown>; maxBodyBytes?: number };
 const methods = new Set(["GET", "POST", "PUT", "DELETE"]);
@@ -54,6 +55,7 @@ export function createApiServer(
   options: Options = {},
 ) {
   const maximum = options.maxBodyBytes ?? 10 * 1024 * 1024 + 64 * 1024;
+  const ready = createReadinessProbe(async () => options.ready?.());
   const server = createServer(
     {
       maxHeaderSize: 16 * 1024,
@@ -72,7 +74,7 @@ export function createApiServer(
           );
         if (incoming.method === "GET" && pathname === "/readyz") {
           try {
-            await options.ready?.();
+            if (!(await ready())) throw new Error("Dependency unavailable");
             return await writeResponse(
               outgoing,
               Response.json({ service: "quizbee-api", status: "ready" }),

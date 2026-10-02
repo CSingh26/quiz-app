@@ -13,12 +13,12 @@
     "worker": "tsx --env-file-if-exists=.env src/server/jobs/run.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/unit/*.test.ts",
-    "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts",
+    "test:integration": "node scripts/test-integration.mjs",
     "test:storage": "tsx --test tests/storage/*.test.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "format": "prettier --write src tests",
-    "format:check": "prettier --check src tests"
+    "format": "prettier --write src tests scripts",
+    "format:check": "prettier --check src tests scripts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
