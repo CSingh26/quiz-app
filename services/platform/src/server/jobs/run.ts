@@ -3,6 +3,7 @@ import { performance } from "node:perf_hooks";
 import { runNextJob, parseWorkerKinds } from "./worker";
 import { maintainPlatform } from "../maintenance";
 import { db } from "../db";
+import { createReadinessProbe } from "../readiness";
 
 async function main() {
   const kinds = parseWorkerKinds(process.env.WORKER_KINDS);
@@ -12,6 +13,7 @@ async function main() {
   let stopped = false;
   let wake: (() => void) | undefined;
   let lastProgress = performance.now();
+  const databaseReady = createReadinessProbe(() => db.$queryRaw`SELECT 1`);
   const stop = () => {
     stopped = true;
     wake?.();
@@ -35,25 +37,7 @@ async function main() {
         }
         const heartbeatAgeMs = Math.round(performance.now() - lastProgress);
         let ready = !stopped && heartbeatAgeMs < 6 * 60_000;
-        if (ready && path === "/readyz") {
-          let timer: ReturnType<typeof setTimeout> | undefined;
-          try {
-            await Promise.race([
-              db.$queryRaw`SELECT 1`,
-              new Promise((_, reject) => {
-                timer = setTimeout(
-                  () => reject(new Error("Readiness deadline")),
-                  2000,
-                );
-                timer.unref();
-              }),
-            ]);
-          } catch {
-            ready = false;
-          } finally {
-            if (timer) clearTimeout(timer);
-          }
-        }
+        if (ready && path === "/readyz") ready = await databaseReady();
         response.writeHead(ready ? 200 : 503).end(
           JSON.stringify({
             status: stopped ? "stopping" : ready ? "ok" : "unavailable",

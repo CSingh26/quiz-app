@@ -82,6 +82,8 @@ Verification/reset links are single-use and expire after 30 minutes. SMTP config
 - API `GET /healthz` is process liveness; `GET /readyz` checks PostgreSQL readiness.
 - Worker `GET /healthz` reports progress and role; `GET /readyz` also checks PostgreSQL. The host default is loopback port 8081.
 
+API and worker readiness probes return `503` within two seconds when the database check stalls. Each process shares one in-flight readiness query across callers, including after the response deadline, so repeated probes cannot queue more checks behind a stalled connection. Timing out the response does not cancel that query. Once it settles, a subsequent probe makes a fresh database check and can report recovery. These probes do not establish object-store, mail or AI-provider availability.
+
 Build the web with `npm run build --prefix frontend`. Docker copies the generated `.next/standalone`, `.next/static` and `public` files and runs `node server.js`. The browser-test launcher mirrors that standalone layout on loopback port 3018; see [TESTING.md](TESTING.md). The API and worker use their own service package and image, independently of the web build.
 
 ## Release candidate images
